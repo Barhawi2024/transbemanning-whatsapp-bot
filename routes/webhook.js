@@ -10,7 +10,8 @@ const { generateExcelReport } = require('../services/excel');
 const { distanceBetweenPoints } = require('../services/gps');
 
 const router = express.Router();
-async function handleIncomingMessage
+
+
 
 async function sendWhatsAppText(to, body) {
   const token = process.env.WHATSAPP_TOKEN;
