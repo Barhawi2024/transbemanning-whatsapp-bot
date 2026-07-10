@@ -10,6 +10,7 @@ const { generateExcelReport } = require('../services/excel');
 const { distanceBetweenPoints } = require('../services/gps');
 
 const router = express.Router();
+async function handleIncomingMessage
 
 async function sendWhatsAppText(to, body) {
   const token = process.env.WHATSAPP_TOKEN;
@@ -52,7 +53,31 @@ async function handleIncomingMessage(message, contact) {
   if (!text) {
     return 'Received an empty message.';
   }
+const swedishTime = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: 'Europe/Stockholm',
+  hour: '2-digit',
+  minute: '2-digit',
+}).format(new Date());
 
+if (normalized === 'in') {
+  await saveActivity({
+    sender,
+    action: 'check-in',
+    body: text,
+  });
+
+  return `✅ Incheckning registrerad.\nTid: ${swedishTime}\nHa en bra arbetsdag!`;
+}
+
+if (normalized === 'ut') {
+  await saveActivity({
+    sender,
+    action: 'check-out',
+    body: text,
+  });
+
+  return `✅ Utcheckning registrerad.\nTid: ${swedishTime}`;
+}
   if (normalized.includes('driver')) {
     const parts = text.split(/\s+/);
     const name = parts[1] || 'Driver';
