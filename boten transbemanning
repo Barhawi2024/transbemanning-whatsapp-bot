@@ -1,0 +1,169 @@
+# TransBemanning WhatsApp Bot
+
+WhatsApp Cloud API-bot för incheckning, utcheckning och månadsexport till Excel.
+
+## Kommandon för förare
+
+- `IN` – registrerar starttid.
+- `UT` – registrerar sluttid och räknar arbetstid.
+- `STATUS` – visar om föraren är incheckad.
+
+Föraren identifieras automatiskt genom sitt WhatsApp-nummer. Namnet hämtas från WhatsApp-profilen.
+
+## Säkerhet
+
+Lägg aldrig Access Token, App Secret eller andra hemligheter i GitHub. Alla hemligheter ska läggas i Railway under **Variables**.
+
+Den Access Token som tidigare visats i en skärmbild bör bytas ut i Meta innan produktionsdrift.
+
+## Railway – installation
+
+### 1. Ladda upp projektet till GitHub
+
+Packa upp ZIP-filen. I GitHub-repot:
+
+1. Klicka **Add file**.
+2. Välj **Upload files**.
+3. Dra in alla filer och mappen `src`.
+4. Klicka **Commit changes**.
+
+Railway startar normalt en ny deployment automatiskt när GitHub uppdateras.
+
+### 2. Lägg till PostgreSQL
+
+I Railway-projektet:
+
+1. Stäng tjänstens detaljruta så att projektets canvas syns.
+2. Klicka **+ New**.
+3. Välj **Database** → **PostgreSQL**.
+4. Vänta tills databasen är igång.
+
+### 3. Lägg till variabler i bot-tjänsten
+
+Öppna bot-tjänsten → **Variables** och lägg till:
+
+```env
+NODE_ENV=production
+VERIFY_TOKEN=SKAPA_EN_LÅNG_HEMLIG_TEXT
+WHATSAPP_TOKEN=DIN_META_ACCESS_TOKEN
+PHONE_NUMBER_ID=DITT_PHONE_NUMBER_ID
+META_GRAPH_VERSION=v25.0
+APP_SECRET=DIN_META_APP_SECRET
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+ADMIN_API_KEY=SKAPA_EN_ANNAN_LÅNG_HEMLIG_TEXT
+TIMEZONE=Europe/Stockholm
+AUTO_BREAK_MINUTES=30
+BREAK_THRESHOLD_HOURS=6
+```
+
+`VERIFY_TOKEN` är en egen hemlig text. Den ska senare skrivas exakt likadant i Meta.
+
+Om PostgreSQL-tjänsten har ett annat namn än `Postgres`, välj Railways variabelreferens via gränssnittet i stället för att skriva den manuellt.
+
+### 4. Skapa offentlig domän
+
+I bot-tjänsten:
+
+1. Öppna **Settings/Miljöer**.
+2. Gå till **Networking/Nätverkande**.
+3. Klicka **Generate Domain/Generera domän**.
+
+Callback URL blir:
+
+```text
+https://DIN-DOMÄN.up.railway.app/webhook
+```
+
+Kontrollera först:
+
+```text
+https://DIN-DOMÄN.up.railway.app/health
+```
+
+Sidan ska visa `ok`.
+
+## Meta – webhook
+
+På sidan **Steg 2. Produktionskonfiguration**:
+
+- **Callback URL:** `https://DIN-DOMÄN.up.railway.app/webhook`
+- **Verify token:** samma värde som `VERIFY_TOKEN` i Railway.
+
+Klicka **Verify and save**. Prenumerera därefter på webhook-fältet **messages**.
+
+## Excelrapport
+
+Rapporten skyddas av `ADMIN_API_KEY`.
+
+Öppna denna adress i webbläsaren:
+
+```text
+https://DIN-DOMÄN.up.railway.app/admin/report/2026/7.xlsx?key=DIN_ADMIN_API_KEY
+```
+
+Byt år och månad efter behov.
+
+## Rastregel
+
+Standardinställningen drar automatiskt av 30 minuter när passet varar minst 6 timmar:
+
+```env
+AUTO_BREAK_MINUTES=30
+BREAK_THRESHOLD_HOURS=6
+```
+
+Ändra variablerna i Railway om företagets regel ska vara annorlunda.
+
+## Produktionskontroll
+
+Innan riktig användning:
+
+1. Byt Access Token som syntes i skärmbilden.
+2. Använd en permanent system-user-token i stället för en tillfällig testtoken.
+3. Lägg in `APP_SECRET` så att webhook-signaturer verifieras.
+4. Registrera och verifiera företagets riktiga WhatsApp-nummer.
+5. Aktivera appens Live-läge när Metas krav är uppfyllda.
+6. Säkerhetskopiera PostgreSQL-data regelbundet.
+
+
+## Personliga rapporter och administratörsrapport
+
+Alla förare kan bara se sin egen månadsrapport:
+
+```text
+RAPPORT
+```
+
+För en viss månad:
+
+```text
+RAPPORT 2026-07
+```
+
+Administratörer kan se sammanställningen för alla:
+
+```text
+ADMIN RAPPORT
+```
+
+eller:
+
+```text
+ADMIN RAPPORT 2026-07
+```
+
+Behörigheten styrs av WhatsApp-numret i Railway:
+
+```env
+ADMIN_WA_IDS=46701234567,46707654321
+```
+
+Skriv numren utan `+`, mellanslag eller bindestreck.
+
+Varje förare identifieras genom det WhatsApp-nummer som skickar meddelandet. Därför kan Hassan bara få Hassans rapport, medan administratörernas nummer kan få sammanställningen för samtliga förare.
+
+För att administratören även ska få en länk till Excelrapporten, lägg till:
+
+```env
+PUBLIC_BASE_URL=https://DIN-DOMÄN.up.railway.app
+```
