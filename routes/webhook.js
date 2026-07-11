@@ -164,8 +164,7 @@ router.get('/', (req, res) => {
   }
 
   return res.sendStatus(403);
-});
-
+}); registerDriver
 router.post('/', async (req, res) => {
   try {
     const entries = req.body.entry || [];
