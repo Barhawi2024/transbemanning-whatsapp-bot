@@ -43,6 +43,8 @@ async function sendWhatsAppText(to, body) {
 async function handleIncomingMessage(message, contact) {
   const text = message.text?.body || '';
   const normalized = text.trim().toLowerCase();
+  console.log("TEXT:", text);
+console.log("NORMALIZED:", normalized);
   const sender = contact?.wa_id || message.from || 'unknown';
 
   const savedMessage = await saveMessage({
