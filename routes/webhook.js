@@ -134,7 +134,20 @@ if (normalized === 'ut') {
     }
     return 'Send GPS coordinates like: gps 59.3293, 18.0686';
   }
+if (/^reg\b/.test(normalized)) {
+  const parts = text.trim().split(/\s+/);
+  const name = parts[1] || 'Driver';
+  const phone = parts[2] || sender;
+  const vehicleNumber = parts[3] || 'N/A';
 
+  await registerDriver({ name, phone, vehicleNumber });
+  await saveActivity({
+    sender,
+    action: 'register-driver',
+    body: text
+  });
+return `✅ Förare registrerad. Namn: ${name} Telefon: ${phone} Bil: ${vehicleNumber}`;
+}
   await saveActivity({ sender, action: 'echo', body: text });
   return `You said: ${text}`;
 }
