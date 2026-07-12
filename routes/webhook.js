@@ -58,6 +58,11 @@ console.log("NORMALIZED:", normalized);
   }
 
   if (/^reg\b/.test(normalized)) {
+    const adminPhone = process.env.ADMIN_PHONE;
+
+if (sender !== adminPhone) {
+  return '❌ Endast administratören kan registrera förare.';
+}
     const parts = text.trim().split(/\s+/);
     const driverId = parts[1];
 const phone = parts[2] || sender;
