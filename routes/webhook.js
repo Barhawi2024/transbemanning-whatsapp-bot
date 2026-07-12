@@ -2,7 +2,12 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const { saveMessage, listMessages, listDrivers, saveActivity } = require('../database');
+const {
+  saveMessage,
+  listMessages,
+  getAllDrivers,
+  saveActivity
+} = require('../database');
 const { registerDriver } = require('../services/driver');
 const { buildReport } = require('../services/report');
 const { generatePdfReport } = require('../services/pdf');
@@ -73,6 +78,7 @@ if (!/^\d{4}$/.test(driverId)) {
 }
 
 await registerDriver({
+  driverId,
   name: driverId,
   phone,
   vehicleNumber
@@ -92,7 +98,7 @@ Bil: ${vehicleNumber}`;
 
   if (normalized.includes('report')) {
     const messages = await listMessages();
-    const drivers = await listDrivers();
+    const drivers = await getAllDrivers();
     const report = buildReport({ messages, drivers });
     await saveActivity({ sender, action: 'generate-report', body: text });
     return `Report ready. Messages: ${report.messageCount}. Drivers: ${report.driverCount}.`;
@@ -100,7 +106,7 @@ Bil: ${vehicleNumber}`;
 
   if (normalized.includes('pdf')) {
     const messages = await listMessages();
-    const drivers = await listDrivers();
+    const drivers = await getAllDrivers();
     const report = buildReport({ messages, drivers });
     const pdfBuffer = await generatePdfReport(report);
     const outputDir = path.join(__dirname, '..', 'tmp');
@@ -113,7 +119,7 @@ Bil: ${vehicleNumber}`;
 
   if (normalized.includes('excel')) {
     const messages = await listMessages();
-    const drivers = await listDrivers();
+    const drivers = await getAllDrivers();
     const report = buildReport({ messages, drivers });
     const excelBuffer = await generateExcelReport(report);
     const outputDir = path.join(__dirname, '..', 'tmp');
@@ -135,20 +141,6 @@ Bil: ${vehicleNumber}`;
     }
     return 'Send GPS coordinates like: gps 59.3293, 18.0686';
   }
-if (/^reg\b/.test(normalized)) {
-  const parts = text.trim().split(/\s+/);
-  const name = parts[1] || 'Driver';
-  const phone = parts[2] || sender;
-  const vehicleNumber = parts[3] || 'N/A';
-
-  await registerDriver({ name, phone, vehicleNumber });
-  await saveActivity({
-    sender,
-    action: 'register-driver',
-    body: text
-  });
-return `✅ Förare registrerad. Namn: ${name} Telefon: ${phone} Bil: ${vehicleNumber}`;
-}
   const swedishTime = new Intl.DateTimeFormat('sv-SE', {
   timeZone: 'Europe/Stockholm',
   hour: '2-digit',
