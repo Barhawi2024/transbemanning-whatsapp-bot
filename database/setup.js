@@ -75,7 +75,66 @@ async function setupDatabase() {
     ON work_sessions(driver_id)
     WHERE check_out_at IS NULL;
   `);
+  await query(`
+    CREATE TABLE IF NOT EXISTS commands (
+      id BIGSERIAL PRIMARY KEY,
+      sender VARCHAR(50) NOT NULL,
+      driver_id VARCHAR(20),
+      command VARCHAR(50) NOT NULL,
+      command_text TEXT,
+      status VARCHAR(30) NOT NULL DEFAULT 'received',
+      result_text TEXT,
+      metadata JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      completed_at TIMESTAMPTZ
+    );
+  `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS admins (
+      id BIGSERIAL PRIMARY KEY,
+      phone VARCHAR(50) UNIQUE NOT NULL,
+      name VARCHAR(100),
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS gps_locations (
+      id BIGSERIAL PRIMARY KEY,
+      driver_id VARCHAR(20),
+      sender VARCHAR(50) NOT NULL,
+      latitude DOUBLE PRECISION NOT NULL,
+      longitude DOUBLE PRECISION NOT NULL,
+      accuracy DOUBLE PRECISION,
+      address TEXT,
+      captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      metadata JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE INDEX IF NOT EXISTS idx_commands_sender
+    ON commands(sender);
+  `);
+
+  await query(`
+    CREATE INDEX IF NOT EXISTS idx_commands_driver_id
+    ON commands(driver_id);
+  `);
+
+  await query(`
+    CREATE INDEX IF NOT EXISTS idx_gps_driver_id
+    ON gps_locations(driver_id);
+  `);
+
+  await query(`
+    CREATE INDEX IF NOT EXISTS idx_gps_captured_at
+    ON gps_locations(captured_at DESC);
+  `);
   console.log('✅ Database tables ready');
 }
 
