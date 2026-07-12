@@ -53,9 +53,14 @@ async function getDriverByPhone(phone) {
     `
       SELECT *
       FROM drivers
-      WHERE REGEXP_REPLACE(phone, '[^0-9]', '', 'g') =
-            REGEXP_REPLACE($1, '[^0-9]', '', 'g')
-        AND is_active = TRUE
+      WHERE RIGHT(
+        REGEXP_REPLACE(phone, '[^0-9]', '', 'g'),
+        9
+      ) = RIGHT(
+        REGEXP_REPLACE($1, '[^0-9]', '', 'g'),
+        9
+      )
+      AND is_active = TRUE
       LIMIT 1
     `,
     [phone]
