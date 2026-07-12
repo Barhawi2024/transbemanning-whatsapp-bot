@@ -9,7 +9,8 @@ const {
   saveActivity,
   getDriverByPhone,
   checkIn,
-  checkOut
+  checkOut,
+  saveCommand
 } = require('../database');
 const { registerDriver } = require('../services/driver');
 const { buildReport } = require('../services/report');
@@ -54,7 +55,19 @@ async function handleIncomingMessage(message, contact) {
   console.log("TEXT:", text);
 console.log("NORMALIZED:", normalized);
   const sender = contact?.wa_id || message.from || 'unknown';
+const commandName =
+  normalized.split(/\s+/)[0].toUpperCase() || 'EMPTY';
 
+await saveCommand({
+  sender,
+  command: commandName,
+  commandText: text,
+  status: 'received',
+  metadata: {
+    whatsappMessageId: message.id || null,
+    messageType: message.type || 'text'
+  }
+});
   const savedMessage = await saveMessage({
     sender,
     type: message.type,
