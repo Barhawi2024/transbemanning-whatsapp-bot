@@ -251,7 +251,79 @@ ID: ${driver.driver_id}
 Tid: ${swedishTime}
 Arbetstid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
 }
-await saveActivity({
+if (/^rapport\b/.test(normalized)) {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan skapa rapporter.';
+  }
+
+  const parts = text.trim().split(/\s+/);
+  const driverId = parts[1];
+  const monthText = parts[2];
+
+  if (!driverId || !/^\d{4}$/.test(driverId)) {
+    return '❌ Fel format.\nAnvänd: RAPPORT 1001 2026-07';
+  }
+
+  if (!monthText || !/^\d{4}-\d{2}$/.test(monthText)) {
+    return '❌ Fel månad.\nAnvänd: RAPPORT 1001 2026-07';
+  }
+
+  const [year, month] = monthText.split('-').map(Number);
+
+  if (month < 1 || month > 12) {
+    return '❌ Månaden måste vara mellan 01 och 12.';
+  }
+
+  const report = await getDriverMonthlyReport(
+    driverId,
+    year,
+    month
+  );
+
+  if (!report.driver) {
+    return `❌ Förare med ID ${driverId} finns inte.`;
+  }
+
+  const sessionsText = report.sessions.length
+    ? report.sessions.map((session, index) => {
+        const inTime = new Date(
+          session.check_in_at
+        ).toLocaleString('sv-SE', {
+          timeZone: 'Europe/Stockholm'
+        });
+
+        const outTime = session.check_out_at
+          ? new Date(session.check_out_at).toLocaleString(
+              'sv-SE',
+              { timeZone: 'Europe/Stockholm' }
+            )
+          : 'Pågående';
+
+        const workedMinutes =
+          Number(session.worked_minutes || 0);
+
+        const hours = Math.floor(workedMinutes / 60);
+        const minutes = workedMinutes % 60;
+
+        return `${index + 1}. ${inTime} → ${outTime}
+Tid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
+      }).join('\n\n')
+    : 'Inga arbetspass registrerade.';
+
+  return `📊 Månadsrapport
+Förare: ${report.driver.name || driverId}
+ID: ${driverId}
+Månad: ${monthText}
+
+Antal avslutade pass: ${report.totals.closedSessions}
+Pågående pass: ${report.totals.openSessions}
+Total arbetstid: ${report.totals.totalText}
+
+${sessionsText}`;
+}
+  await saveActivity({
   sender,
   action: 'echo',
   body: text
