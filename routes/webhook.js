@@ -6,7 +6,10 @@ const {
   saveMessage,
   listMessages,
   getAllDrivers,
-  saveActivity
+  saveActivity,
+  getDriverByPhone,
+  checkIn,
+  checkOut
 } = require('../database');
 const { registerDriver } = require('../services/driver');
 const { buildReport } = require('../services/report');
@@ -148,25 +151,93 @@ Bil: ${vehicleNumber}`;
 }).format(new Date());
 
 if (normalized === 'in') {
+  const driver = await getDriverByPhone(sender);
+
+  if (!driver) {
+    return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
+  }
+
+  const result = await checkIn({
+    driverId: driver.driver_id,
+    sender,
+    vehicleNumber: driver.vehicle_number
+  });
+
+  if (result.alreadyOpen) {
+    const previousTime = new Date(
+      result.session.check_in_at
+    ).toLocaleString('sv-SE', {
+      timeZone: 'Europe/Stockholm'
+    });
+
+    return `⚠️ Du är redan incheckad.\nTid: ${previousTime}`;
+  }
+
   await saveActivity({
+    driverId: driver.driver_id,
     sender,
     action: 'check-in',
-    body: text
+    commandText: text,
+    vehicleNumber: driver.vehicle_number
   });
 
-  return `✅ Incheckning registrerad.\nTid: ${swedishTime}\n\nHa en bra arbetsdag!`;
-}
+  return `✅ Incheckning registrerad.
+ID: ${driver.driver_id}
+Bil: ${driver.vehicle_number || '-'}
+Tid: ${swedishTime}
 
+Ha en bra arbetsdag!`;
+}
 if (normalized === 'ut' || normalized === 'out') {
+  const driver = await getDriverByPhone(sender);
+
+  if (!driver) {
+    return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
+  }
+
+  const result = await checkOut({
+    driverId: driver.driver_id,
+    breakMinutes: 0
+  });
+
+  if (result.noOpenSession) {
+    return '⚠️ Du har ingen aktiv incheckning att avsluta.';
+  }
+
+  const checkInTime = new Date(
+    result.session.check_in_at
+  );
+
+  const checkOutTime = new Date(
+    result.session.check_out_at
+  );
+
+  const totalMinutes = Math.max(
+    0,
+    Math.floor(
+      (checkOutTime.getTime() - checkInTime.getTime()) / 60000
+    ) - Number(result.session.break_minutes || 0)
+  );
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
   await saveActivity({
+    driverId: driver.driver_id,
     sender,
     action: 'check-out',
-    body: text
+    commandText: text,
+    vehicleNumber: driver.vehicle_number,
+    metadata: {
+      workedMinutes: totalMinutes
+    }
   });
 
-  return `✅ Utcheckning registrerad.\nTid: ${swedishTime}`;
+  return `✅ Utcheckning registrerad.
+ID: ${driver.driver_id}
+Tid: ${swedishTime}
+Arbetstid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
 }
-
 await saveActivity({
   sender,
   action: 'echo',
