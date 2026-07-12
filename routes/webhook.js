@@ -57,6 +57,7 @@ console.log("NORMALIZED:", normalized);
     return 'Received an empty message.';
   }
 
+<<<<<<< HEAD
   if (normalized.includes('driver')) {
     const parts = text.split(/\s+/);
     const name = parts[1] || 'Driver';
@@ -65,6 +66,35 @@ console.log("NORMALIZED:", normalized);
     await registerDriver({ name, phone, vehicleNumber });
     await saveActivity({ sender, action: 'register-driver', body: text });
     return `Driver registered: ${name} (${phone}) - Vehicle: ${vehicleNumber}`;
+=======
+  if (/^reg\b/.test(normalized)) {
+    const parts = text.trim().split(/\s+/);
+    const driverId = parts[1];
+const phone = parts[2] || sender;
+const vehicleNumber = parts[3] || 'N/A';
+
+if (!/^\d{4}$/.test(driverId)) {
+  return '❌ Förar-ID måste vara exakt 4 siffror.\nExempel: REG 1001 0738703522 MNS092';
+}
+
+await registerDriver({
+  name: driverId,
+  phone,
+  vehicleNumber
+});
+
+await saveActivity({
+  sender,
+  action: 'register-driver',
+  body: text
+});
+
+return `✅ Förare registrerad.
+ID: ${driverId}
+Telefon: ${phone}
+Bil: ${vehicleNumber}`;
+  
+>>>>>>> 27d9a8b (Driver ID update)
   }
 
   if (normalized.includes('report')) {
