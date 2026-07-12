@@ -1,11 +1,11 @@
-const { saveDriver, listDrivers } = require('../database');
+const { createDriver, getAllDrivers } = require('../database');
 
 async function registerDriver({ name, phone, vehicleNumber }) {
-  return saveDriver({ name, phone, vehicleNumber });
+  return createDriver(name, name, phone);
 }
 
 async function getDrivers() {
-  return listDrivers();
+  return getAllDrivers();
 }
 
 module.exports = {
