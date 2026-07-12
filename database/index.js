@@ -1,7 +1,8 @@
-const pool = require('./connection');
+const { pool, query } = require('./connection');
 const setupDatabase = require('./setup');
 
 module.exports = {
   pool,
+  query,
   setupDatabase
 };
