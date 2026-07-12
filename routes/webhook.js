@@ -149,8 +149,39 @@ if (/^reg\b/.test(normalized)) {
   });
 return `✅ Förare registrerad. Namn: ${name} Telefon: ${phone} Bil: ${vehicleNumber}`;
 }
-  await saveActivity({ sender, action: 'echo', body: text });
-  return `You said: ${text}`;
+  const swedishTime = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: 'Europe/Stockholm',
+  hour: '2-digit',
+  minute: '2-digit'
+}).format(new Date());
+
+if (normalized === 'in') {
+  await saveActivity({
+    sender,
+    action: 'check-in',
+    body: text
+  });
+
+  return `✅ Incheckning registrerad.\nTid: ${swedishTime}\n\nHa en bra arbetsdag!`;
+}
+
+if (normalized === 'ut' || normalized === 'out') {
+  await saveActivity({
+    sender,
+    action: 'check-out',
+    body: text
+  });
+
+  return `✅ Utcheckning registrerad.\nTid: ${swedishTime}`;
+}
+
+await saveActivity({
+  sender,
+  action: 'echo',
+  body: text
+});
+
+return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
 router.get('/', (req, res) => {
