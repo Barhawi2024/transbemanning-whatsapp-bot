@@ -1,32 +1,34 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const webhookRoutes = require('./routes/webhook');
-const { initDatabase } = require('./database');
+require('dotenv').config();
 
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
+
+const webhookRoutes = require('./routes/webhook');
+const { setupDatabase } = require('./database');
 
 const app = express();
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ extended: true }));
+const PORT = process.env.PORT || 8080;
+
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'TransBemanning WhatsApp bot is running' });
+  res.status(200).send('TransBemanning WhatsApp Bot is running');
 });
 
 app.use('/webhook', webhookRoutes);
 
-const port = process.env.PORT || 3000;
-
-(async () => {
+async function startServer() {
   try {
-    await initDatabase();
-    app.listen(port, () => {
-      console.log(`Server listening on port ${port}`);
+    await setupDatabase();
+
+    app.listen(PORT, () => {
+      console.log(`✅ Server listening on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start server', error);
+    console.error('❌ Kunde inte starta servern:', error);
     process.exit(1);
   }
-})();
+}
 
-module.exports = app;
+startServer();
