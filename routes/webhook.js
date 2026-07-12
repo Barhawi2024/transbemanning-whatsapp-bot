@@ -57,16 +57,6 @@ console.log("NORMALIZED:", normalized);
     return 'Received an empty message.';
   }
 
-<<<<<<< HEAD
-  if (normalized.includes('driver')) {
-    const parts = text.split(/\s+/);
-    const name = parts[1] || 'Driver';
-    const phone = parts[2] || sender;
-    const vehicleNumber = parts[3] || 'N/A';
-    await registerDriver({ name, phone, vehicleNumber });
-    await saveActivity({ sender, action: 'register-driver', body: text });
-    return `Driver registered: ${name} (${phone}) - Vehicle: ${vehicleNumber}`;
-=======
   if (/^reg\b/.test(normalized)) {
     const parts = text.trim().split(/\s+/);
     const driverId = parts[1];
@@ -93,8 +83,6 @@ return `✅ Förare registrerad.
 ID: ${driverId}
 Telefon: ${phone}
 Bil: ${vehicleNumber}`;
-  
->>>>>>> 27d9a8b (Driver ID update)
   }
 
   if (normalized.includes('report')) {
