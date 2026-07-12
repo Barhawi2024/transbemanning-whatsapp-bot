@@ -10,7 +10,9 @@ const {
   getDriverByPhone,
   checkIn,
   checkOut,
-  saveCommand
+  saveCommand,
+  getDriverMonthlyReport,
+  isAdmin
 } = require('../database');
 const { registerDriver } = require('../services/driver');
 const { buildReport } = require('../services/report');
