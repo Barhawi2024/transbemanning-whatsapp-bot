@@ -53,6 +53,9 @@ async function sendWhatsAppText(to, body) {
 
 async function handleIncomingMessage(message, contact) {
   const text = message.text?.body || '';
+  if (!text.trim()) {
+  return null;
+}
   const normalized = text.trim().toLowerCase();
   console.log("TEXT:", text);
 console.log("NORMALIZED:", normalized);
