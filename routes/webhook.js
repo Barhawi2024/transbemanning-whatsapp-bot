@@ -333,7 +333,30 @@ ${sessionsText}`;
   action: 'echo',
   body: text
 });
+if (normalized === 'lista') {
+  const adminAllowed = await isAdmin(sender);
 
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan se förarlistan.';
+  }
+
+  const drivers = await getAllDrivers();
+
+  if (!drivers.length) {
+    return 'ℹ️ Det finns inga registrerade förare.';
+  }
+
+  const driverList = drivers.map((driver, index) => {
+    return `${index + 1}. ${driver.name || driver.driver_id}
+ID: ${driver.driver_id}
+Telefon: ${driver.phone || '-'}
+Bil: ${driver.vehicle_number || '-'}`;
+  }).join('\n\n');
+
+  return `👥 Registrerade förare: ${drivers.length}
+
+${driverList}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
