@@ -16,7 +16,7 @@ module.exports = {
   pool,
   query,
   setupDatabase,
-getActiveSessions,
+  getActiveSessions,
   ...drivers,
   ...activities,
   ...messages,
@@ -25,6 +25,6 @@ getActiveSessions,
   ...admins,
   ...gps,
   ...reports,
-  ...pdfReports
-  ...pendingActions,
+  ...pdfReports,
+  ...pendingActions
 };
