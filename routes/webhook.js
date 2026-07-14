@@ -10,6 +10,7 @@ const {
   getDriverByPhone,
   checkIn,
   checkOut,
+  getActiveSessions,
   saveCommand,
   getDriverMonthlyReport,
   isAdmin
