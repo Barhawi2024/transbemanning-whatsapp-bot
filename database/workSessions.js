@@ -166,6 +166,6 @@ module.exports = {
   getOpenSession,
   getSessionsByDriver,
   getMonthlySessions,
-  getMonthlyMinutes
+  getMonthlyMinutes,
   getActiveSessions
 };
