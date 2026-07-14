@@ -1,6 +1,6 @@
 const { pool, query } = require('./connection');
 const setupDatabase = require('./setup');
-
+const { getActiveSessions } = require('./workSessions');
 const drivers = require('./drivers');
 const activities = require('./activities');
 const messages = require('./messages');
@@ -15,7 +15,7 @@ module.exports = {
   pool,
   query,
   setupDatabase,
-
+getActiveSessions,
   ...drivers,
   ...activities,
   ...messages,
