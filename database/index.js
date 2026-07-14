@@ -10,6 +10,7 @@ const admins = require('./admins');
 const gps = require('./gps');
 const reports = require('./reports');
 const pdfReports = require('./pdfReports');
+const pendingActions = require('./pendingActions');
 
 module.exports = {
   pool,
@@ -25,4 +26,5 @@ getActiveSessions,
   ...gps,
   ...reports,
   ...pdfReports
+  ...pendingActions,
 };
