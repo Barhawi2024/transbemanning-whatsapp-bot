@@ -145,7 +145,21 @@ async function getMonthlyMinutes(driverId, year, month) {
 
   return totalMinutes;
 }
+async function getActiveSessions() {
+  const result = await query(`
+    SELECT
+      ws.driver_id,
+      ws.check_in_at,
+      d.vehicle_number,
+      d.phone
+    FROM work_sessions ws
+    JOIN drivers d ON d.driver_id = ws.driver_id
+    WHERE ws.check_out_at IS NULL
+    ORDER BY ws.check_in_at ASC
+  `);
 
+  return result.rows;
+}
 module.exports = {
   checkIn,
   checkOut,
