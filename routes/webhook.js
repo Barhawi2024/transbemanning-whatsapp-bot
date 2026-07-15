@@ -394,6 +394,7 @@ Rast: ${session.break_minutes || 0} min
     : 'Inga arbetspass registrerade.';
 
 return `📊 Månadsrapport
+
 Förare: ${report.driver?.name || driverId}
 ID: ${driverId}
 Månad: ${monthText}
