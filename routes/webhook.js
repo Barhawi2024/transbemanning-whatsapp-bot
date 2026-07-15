@@ -214,6 +214,19 @@ if (normalized === 'ut' || normalized === 'out') {
     return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
   }
 
+  await setPendingAction({
+    sender,
+    driverId: driver.driver_id,
+    action: 'awaiting_break_answer'
+  });
+
+  return `⏸️ Har du haft rast under arbetspasset?
+
+Svara:
+JA – om du har haft rast
+NEJ – om du inte har haft rast`;
+}
+
   const result = await checkOut({
     driverId: driver.driver_id,
     breakMinutes: 0
