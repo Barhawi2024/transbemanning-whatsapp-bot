@@ -318,49 +318,6 @@ JA – om du har haft rast
 NEJ – om du inte har haft rast`;
 }
 
-  const result = await checkOut({
-    driverId: driver.driver_id,
-    breakMinutes: 0
-  });
-
-  if (result.noOpenSession) {
-    return '⚠️ Du har ingen aktiv incheckning att avsluta.';
-  }
-
-  const checkInTime = new Date(
-    result.session.check_in_at
-  );
-
-  const checkOutTime = new Date(
-    result.session.check_out_at
-  );
-
-  const totalMinutes = Math.max(
-    0,
-    Math.floor(
-      (checkOutTime.getTime() - checkInTime.getTime()) / 60000
-    ) - Number(result.session.break_minutes || 0)
-  );
-
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  await saveActivity({
-    driverId: driver.driver_id,
-    sender,
-    action: 'check-out',
-    commandText: text,
-    vehicleNumber: driver.vehicle_number,
-    metadata: {
-      workedMinutes: totalMinutes
-    }
-  });
-
-  return `✅ Utcheckning registrerad.
-ID: ${driver.driver_id}
-Tid: ${swedishTime}
-Arbetstid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
-}
 if (/^rapport\b/.test(normalized)) {
   const adminAllowed = await isAdmin(sender);
 
