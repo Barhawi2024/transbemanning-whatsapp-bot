@@ -35,7 +35,56 @@ async function sendWhatsAppText(to, body) {
   if (!token || !phoneNumberId) {
     return null;
   }
+async function sendWhatsAppDocument(to, filePath, filename) {
+  const token = process.env.WHATSAPP_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
+  if (!token || !phoneNumberId) {
+    throw new Error('WhatsApp-inställningar saknas.');
+  }
+
+  const FormData = require('form-data');
+
+  const form = new FormData();
+
+  form.append('messaging_product', 'whatsapp');
+  form.append('file', fs.createReadStream(filePath), {
+    filename,
+    contentType: 'application/pdf'
+  });
+
+  const uploadResponse = await axios.post(
+    `https://graph.facebook.com/v20.0/${phoneNumberId}/media`,
+    form,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...form.getHeaders()
+      }
+    }
+  );
+
+  const mediaId = uploadResponse.data.id;
+
+  await axios.post(
+    `https://graph.facebook.com/v20.0/${phoneNumberId}/messages`,
+    {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'document',
+      document: {
+        id: mediaId,
+        filename
+      }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+}
   const apiVersion = process.env.WHATSAPP_API_VERSION || 'v20.0';
   const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
 
@@ -256,14 +305,18 @@ if (/^pdf\b/i.test(normalized)) {
     const outputPath = path.join(outputDir, `${driverId}-${monthText}.pdf`);
 
     fs.writeFileSync(outputPath, pdfBuffer);
-
+await sendWhatsAppDocument(
+  sender,
+  outputPath,
+  `${driverId}-${monthText}.pdf`
+);
     await saveActivity({
         sender,
         action: 'generate-pdf',
         body: text
     });
 
-    return `✅ PDF skapad:\n${driverId}-${monthText}.pdf`;
+   return null;
 }
 
   if (normalized.includes('excel')) {
