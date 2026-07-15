@@ -61,7 +61,98 @@ async function handleIncomingMessage(message, contact) {
   console.log("TEXT:", text);
 console.log("NORMALIZED:", normalized);
   const sender = contact?.wa_id || message.from || 'unknown';
-const commandName =
+const pendingAction = await getPendingAction(sender);
+
+if (pendingAction?.action === 'awaiting_break_answer') {
+  if (normalized === 'ja') {
+    await setPendingAction({
+      sender,
+      driverId: pendingAction.driver_id,
+      action: 'awaiting_break_minutes'
+    });
+
+    return `⏱️ Hur lång rast hade du?
+
+Svara med:
+15
+30
+45`;
+  }
+
+  if (normalized === 'nej') {
+    const result = await checkOut({
+      driverId: pendingAction.driver_id,
+      breakMinutes: 0
+    });
+
+    if (result.noOpenSession) {
+      await clearPendingAction(sender);
+      return '⚠️ Du har ingen aktiv incheckning att avsluta.';
+    }
+
+    await clearPendingAction(sender);
+
+    const checkInTime = new Date(result.session.check_in_at);
+    const checkOutTime = new Date(result.session.check_out_at);
+
+    const totalMinutes = Math.max(
+      0,
+      Math.floor(
+        (checkOutTime.getTime() - checkInTime.getTime()) / 60000
+      )
+    );
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return `✅ Utcheckning registrerad.
+Rast: 0 min
+Arbetstid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
+  }
+
+  return '❌ Svara endast JA eller NEJ.';
+}
+
+if (pendingAction?.action === 'awaiting_break_minutes') {
+  const breakMinutes = Number(normalized);
+
+  if (![15, 30, 45].includes(breakMinutes)) {
+    return `❌ Välj endast:
+15
+30
+45`;
+  }
+
+  const result = await checkOut({
+    driverId: pendingAction.driver_id,
+    breakMinutes
+  });
+
+  if (result.noOpenSession) {
+    await clearPendingAction(sender);
+    return '⚠️ Du har ingen aktiv incheckning att avsluta.';
+  }
+
+  await clearPendingAction(sender);
+
+  const checkInTime = new Date(result.session.check_in_at);
+  const checkOutTime = new Date(result.session.check_out_at);
+
+  const totalMinutes = Math.max(
+    0,
+    Math.floor(
+      (checkOutTime.getTime() - checkInTime.getTime()) / 60000
+    ) - breakMinutes
+  );
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `✅ Utcheckning registrerad.
+Rast: ${breakMinutes} min
+Arbetstid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
+}
+  const commandName =
   normalized.split(/\s+/)[0].toUpperCase() || 'EMPTY';
 
 await saveCommand({
