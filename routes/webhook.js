@@ -386,7 +386,8 @@ if (/^rapport\b/.test(normalized)) {
         const hours = Math.floor(workedMinutes / 60);
         const minutes = workedMinutes % 60;
 
-        return `${index + 1}. ${inTime} → ${outTime}
+       return `${index + 1}. ${inTime} → ${outTime}
+Rast: ${Number(session.break_minutes || 0)} min
 Tid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
       }).join('\n\n')
     : 'Inga arbetspass registrerade.';
