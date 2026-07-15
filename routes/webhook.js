@@ -20,7 +20,10 @@ const {
   clearPendingAction
 } = require('../database');
 const { registerDriver } = require('../services/driver');
-const { buildReport } = require('../services/report');
+const {
+  buildReport,
+  buildMonthlyCompanyReport
+} = require('../services/report');
 const { generatePdfReport } = require('../services/pdf');
 const { generateExcelReport } = require('../services/excel');
 const { distanceBetweenPoints } = require('../services/gps');
