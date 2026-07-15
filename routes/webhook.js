@@ -393,8 +393,8 @@ Rast: ${session.break_minutes || 0} min
       }).join('\n\n')
     : 'Inga arbetspass registrerade.';
 
-  return `📊 Månadsrapport
-Förare: ${report.driver.name || driverId}
+return `📊 Månadsrapport
+Förare: ${report.driver?.name || driverId}
 ID: ${driverId}
 Månad: ${monthText}
 
@@ -403,7 +403,6 @@ Pågående pass: ${report.totals.openSessions}
 Total arbetstid: ${report.totals.totalText}
 
 ${sessionsText}`;
-}
   await saveActivity({
   sender,
   action: 'echo',
