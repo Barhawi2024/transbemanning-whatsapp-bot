@@ -609,9 +609,13 @@ router.get('/', (req, res) => {
 
   return res.sendStatus(403);
 });
-router.post('/', async (req, res) => {
-  try {
+router.post('/', (req, res) => {
+  // Bekräfta direkt till Meta så meddelandet inte skickas igen
+  res.sendStatus(200);
+
+  const processWebhook = async () => {
     const entries = req.body.entry || [];
+
     for (const entry of entries) {
       for (const change of entry.changes || []) {
         const value = change.value || {};
@@ -619,19 +623,40 @@ router.post('/', async (req, res) => {
         const messages = value.messages || [];
 
         for (const message of messages) {
-          const contact = contacts.find((item) => item.wa_id === message.from) || contacts[0] || {};
-          const replyText = await handleIncomingMessage(message, contact);
-          if (message.from) {
-            await sendWhatsAppText(message.from, replyText);
+          const contact =
+            contacts.find((item) => item.wa_id === message.from) ||
+            contacts[0] ||
+            {};
+
+          try {
+            const replyText = await handleIncomingMessage(
+              message,
+              contact
+            );
+
+            if (replyText && message.from) {
+              await sendWhatsAppText(
+                message.from,
+                replyText
+              );
+            }
+          } catch (error) {
+            console.error(
+              'Webhook processing error:',
+              error.response?.data || error.message || error
+            );
           }
         }
       }
     }
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Webhook error', error);
-    res.status(500).json({ error: error.message });
-  }
+  };
+
+  processWebhook().catch((error) => {
+    console.error(
+      'Webhook background error:',
+      error.response?.data || error.message || error
+    );
+  });
 });
 
 module.exports = router;
