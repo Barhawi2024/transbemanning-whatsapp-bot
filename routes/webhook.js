@@ -388,7 +388,8 @@ if (/^rapport\b/.test(normalized)) {
 
        return `${index + 1}. ${inTime} → ${outTime}
 Rast: ${Number(session.break_minutes || 0)} min
-Tid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
+Tid: ${hours} h ${String(minutes).padStart(2, '0')} min
+Rast: ${session.break_minutes || 0} min
       }).join('\n\n')
     : 'Inga arbetspass registrerade.';
 
