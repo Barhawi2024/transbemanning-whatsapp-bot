@@ -403,7 +403,7 @@ Pågående pass: ${report.totals.openSessions}
 Total arbetstid: ${report.totals.totalText}
 
 ${sessionsText}`;
-  
+ } 
   await saveActivity({
   sender,
   action: 'echo',
