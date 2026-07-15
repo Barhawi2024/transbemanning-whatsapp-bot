@@ -135,8 +135,8 @@ async function setupDatabase() {
     CREATE INDEX IF NOT EXISTS idx_gps_captured_at
     ON gps_locations(captured_at DESC);
   `);
-  console.log('✅ Database tables ready');
-}
+  
+
   await query(`
     CREATE TABLE IF NOT EXISTS pending_actions (
       sender VARCHAR(50) PRIMARY KEY,
