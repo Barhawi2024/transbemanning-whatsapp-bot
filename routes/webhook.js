@@ -13,7 +13,10 @@ const {
   getActiveSessions,
   saveCommand,
   getDriverMonthlyReport,
-  isAdmin
+  isAdmin,
+  setPendingAction,
+  getPendingAction,
+  clearPendingAction
 } = require('../database');
 const { registerDriver } = require('../services/driver');
 const { buildReport } = require('../services/report');
