@@ -4,7 +4,10 @@ const express = require('express');
 
 const webhookRoutes = require('./routes/webhook');
 const { setupDatabase } = require('./database');
-const { startMonthlyReportJob } = require("./jobs/monthlyReport");
+const {
+  startMonthlyReportJob,
+  sendMonthlyReportEmail
+} = require("./jobs/monthlyReport");
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -18,12 +21,14 @@ app.use('/webhook', webhookRoutes);
 
 async function startServer() {
   try {
-    await setupDatabase();
+ await setupDatabase();
 
-    app.listen(PORT, () => {
-      console.log(`✅ Server listening on port ${PORT}`);
-      startMonthlyReportJob();
-    });
+await sendMonthlyReportEmail();
+
+app.listen(PORT, () => {
+    console.log(`✅ Server listening on port ${PORT}`);
+    startMonthlyReportJob();
+});
   } catch (error) {
     console.error('❌ Kunde inte starta servern:', error);
     process.exit(1);
