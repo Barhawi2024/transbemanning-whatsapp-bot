@@ -229,18 +229,42 @@ Bil: ${vehicleNumber}`;
     return `Report ready. Messages: ${report.messageCount}. Drivers: ${report.driverCount}.`;
   }
 
-  if (normalized.includes('pdf')) {
-    const messages = await listMessages();
-    const drivers = await getAllDrivers();
-    const report = buildReport({ messages, drivers });
+if (/^pdf\b/i.test(normalized)) {
+    const adminAllowed = await isAdmin(sender);
+
+    if (!adminAllowed) {
+        return '❌ Endast administratören kan skapa PDF-rapporter.';
+    }
+
+    const parts = text.trim().split(/\s+/);
+    const driverId = parts[1];
+    const monthText = parts[2];
+
+    if (!driverId || !monthText) {
+        return 'Använd: PDF 1001 2026-07';
+    }
+
+    const [year, month] = monthText.split('-').map(Number);
+
+    const report = await getDriverMonthlyReport(driverId, year, month);
+
     const pdfBuffer = await generatePdfReport(report);
+
     const outputDir = path.join(__dirname, '..', 'tmp');
     fs.mkdirSync(outputDir, { recursive: true });
-    const outputPath = path.join(outputDir, 'report.pdf');
+
+    const outputPath = path.join(outputDir, `${driverId}-${monthText}.pdf`);
+
     fs.writeFileSync(outputPath, pdfBuffer);
-    await saveActivity({ sender, action: 'generate-pdf', body: text });
-    return 'PDF report generated and saved.';
-  }
+
+    await saveActivity({
+        sender,
+        action: 'generate-pdf',
+        body: text
+    });
+
+    return `✅ PDF skapad:\n${driverId}-${monthText}.pdf`;
+}
 
   if (normalized.includes('excel')) {
     const messages = await listMessages();
