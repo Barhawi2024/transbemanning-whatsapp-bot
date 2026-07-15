@@ -104,7 +104,62 @@ async function sendWhatsAppDocument(to, filePath, filename) {
     }
   );
 }
+async function sendWhatsAppDocument(to, filePath, filename) {
+  const token =
+    process.env.WHATSAPP_TOKEN ||
+    process.env.WHATSAPP_ACCESS_TOKEN;
 
+  const phoneNumberId =
+    process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+  if (!token || !phoneNumberId) {
+    throw new Error(
+      'WHATSAPP_TOKEN eller WHATSAPP_PHONE_NUMBER_ID saknas i Railway Variables.'
+    );
+  }
+
+  const FormData = require('form-data');
+  const form = new FormData();
+
+  form.append('messaging_product', 'whatsapp');
+  form.append('file', fs.createReadStream(filePath), {
+    filename,
+    contentType: 'application/pdf'
+  });
+
+  const uploadResponse = await axios.post(
+    `https://graph.facebook.com/v20.0/${phoneNumberId}/media`,
+    form,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...form.getHeaders()
+      }
+    }
+  );
+
+  const mediaId = uploadResponse.data.id;
+
+  await axios.post(
+    `https://graph.facebook.com/v20.0/${phoneNumberId}/messages`,
+    {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to,
+      type: 'document',
+      document: {
+        id: mediaId,
+        filename
+      }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+}
 async function handleIncomingMessage(message, contact) {
   const text = message.text?.body || '';
   if (!text.trim()) {
