@@ -5,6 +5,7 @@ const axios = require('axios');
 const {
   saveMessage,
   listMessages,
+  getMessageByWhatsappId,
   getAllDrivers,
   saveActivity,
   getDriverByPhone,
@@ -59,6 +60,14 @@ async function handleIncomingMessage(message, contact) {
   const text = message.text?.body || '';
   if (!text.trim()) {
   return null;
+}
+  if (message.id) {
+  const existingMessage = await getMessageByWhatsappId(message.id);
+
+  if (existingMessage) {
+    console.log('Duplicate message ignored:', message.id);
+    return null;
+  }
 }
   const normalized = text.trim().toLowerCase();
   console.log("TEXT:", text);
