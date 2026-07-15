@@ -332,7 +332,26 @@ Bil: ${vehicleNumber}`;
     await saveActivity({ sender, action: 'generate-report', body: text });
     return `Report ready. Messages: ${report.messageCount}. Drivers: ${report.driverCount}.`;
   }
+if (/^admin rapport\b/i.test(normalized)) {
+    const adminAllowed = await isAdmin(sender);
 
+    if (!adminAllowed) {
+        return "❌ Endast administratören kan använda ADMIN RAPPORT.";
+    }
+
+    const parts = text.trim().split(/\s+/);
+
+    if (parts.length < 3) {
+        return "Använd: ADMIN RAPPORT 2026-07";
+    }
+
+    const monthText = parts[2];
+    const [year, month] = monthText.split("-").map(Number);
+
+    const report = await buildMonthlyCompanyReport(year, month);
+
+    return report;
+}
 if (/^pdf\b/i.test(normalized)) {
     const adminAllowed = await isAdmin(sender);
 
