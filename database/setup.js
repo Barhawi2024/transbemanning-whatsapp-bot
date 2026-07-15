@@ -137,13 +137,17 @@ async function setupDatabase() {
   `);
   console.log('✅ Database tables ready');
 }
-await query(`
-  CREATE TABLE IF NOT EXISTS pending_actions (
-    sender VARCHAR(50) PRIMARY KEY,
-    driver_id VARCHAR(20),
-    action VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  )
-`);
+  await query(`
+    CREATE TABLE IF NOT EXISTS pending_actions (
+      sender VARCHAR(50) PRIMARY KEY,
+      driver_id VARCHAR(20),
+      action VARCHAR(50) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  console.log('✅ Database tables ready');
+}
+
 module.exports = setupDatabase;
