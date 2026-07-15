@@ -11,7 +11,7 @@ const gps = require('./gps');
 const reports = require('./reports');
 const pdfReports = require('./pdfReports');
 const pendingActions = require('./pendingActions');
-
+const { startMonthlyReportJob } = require("./jobs/monthlyReport");
 module.exports = {
   pool,
   query,
