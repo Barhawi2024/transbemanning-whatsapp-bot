@@ -405,12 +405,13 @@ if (/^ändra\b/i.test(normalized)) {
   }
 
   const parts = text.trim().split(/\s+/);
-  const driverId = parts[1];
-  const type = parts[2]?.toUpperCase();
-  const time = parts[3];
+ const driverId = parts[1];
+const date = parts[2];
+const type = parts[3]?.toUpperCase();
+const time = parts[4];
 
-  if (!driverId || !type || !time) {
-    return "Använd: ÄNDRA 1001 IN 07:15";
+  if (!driverId || !date || !type || !time) {
+    return "Använd: ÄNDRA 1001 2026-07-16 IN 07:15";
   }
 
   if (!["IN", "UT"].includes(type)) {
@@ -421,11 +422,12 @@ if (/^ändra\b/i.test(normalized)) {
     return "❌ Tiden måste skrivas som HH:MM, exempel 07:15.";
   }
 
-  const result = await updateTodaySessionTime({
+const result = await updateTodaySessionTime({
     driverId,
+    date,
     type,
     time
-  });
+});
 
   if (result.notFound) {
     return `❌ Inget arbetspass hittades idag för förare ${driverId}.`;
