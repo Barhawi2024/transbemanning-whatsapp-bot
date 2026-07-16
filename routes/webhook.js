@@ -200,8 +200,88 @@ if (isLocation) {
     return '❌ Kunde inte läsa positionen. Försök skicka platsen igen.';
   }
 
-  return `📍 Position mottagen.
+  if (
+    !pendingAction ||
+    pendingAction.action !== 'awaiting_checkin_location'
+  ) {
+    return `📍 Position mottagen.
 
+Latitud: ${latitude}
+Longitud: ${longitude}
+
+Skriv IN eller UT först.`;
+  }
+
+  const allowedLocations = await getAllowedLocations();
+
+  if (!allowedLocations.length) {
+    return '❌ Det finns inga godkända arbetsplatser registrerade.';
+  }
+
+  let nearestLocation = null;
+  let nearestDistanceMeters = Infinity;
+
+  for (const location of allowedLocations) {
+    const distanceKm = distanceBetweenPoints(
+      {
+        lat: latitude,
+        lon: longitude
+      },
+      {
+        lat: Number(location.latitude),
+        lon: Number(location.longitude)
+      }
+    );
+
+    const distanceMeters = distanceKm * 1000;
+
+    if (distanceMeters < nearestDistanceMeters) {
+      nearestDistanceMeters = distanceMeters;
+      nearestLocation = location;
+    }
+  }
+
+  if (
+    !nearestLocation ||
+    nearestDistanceMeters > nearestLocation.radius_meters
+  ) {
+    return `❌ Incheckning nekad.
+
+Närmaste plats: ${nearestLocation?.name || 'Okänd'}
+Avstånd: ${Math.round(nearestDistanceMeters)} meter
+Tillåten radie: ${nearestLocation?.radius_meters || 25} meter
+
+Skicka en ny aktuell plats när du är på arbetsplatsen.`;
+  }
+
+  const driver = await getDriverByPhone(sender);
+
+  if (!driver) {
+    await clearPendingAction(sender);
+
+    return '❌ Ditt telefonnummer är inte registrerat.';
+  }
+
+  const result = await checkIn({
+    driverId: driver.driver_id,
+    sender,
+    vehicleNumber: driver.vehicle_number
+  });
+
+  if (result.alreadyOpen) {
+    await clearPendingAction(sender);
+
+    return '⚠️ Du är redan incheckad.';
+  }
+
+  await clearPendingAction(sender);
+
+  return `✅ Incheckning registrerad.
+
+ID: ${driver.driver_id}
+Bil: ${driver.vehicle_number || 'Saknas'}
+Plats: ${nearestLocation.name}
+Avstånd: ${Math.round(nearestDistanceMeters)} meter
 Latitud: ${latitude}
 Longitud: ${longitude}`;
 }
