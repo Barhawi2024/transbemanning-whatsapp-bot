@@ -215,13 +215,6 @@ Longitud: ${longitude}
 
 Skriv IN eller UT först.`;
 }
-    return `📍 Position mottagen.
-
-Latitud: ${latitude}
-Longitud: ${longitude}
-
-Skriv IN eller UT först.`;
-  }
 
   const allowedLocations = await getAllowedLocations();
 
