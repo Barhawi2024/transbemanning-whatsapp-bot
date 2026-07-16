@@ -201,10 +201,20 @@ if (isLocation) {
     return '❌ Kunde inte läsa positionen. Försök skicka platsen igen.';
   }
 
-  if (
-    !pendingAction ||
-    pendingAction.action !== 'awaiting_checkin_location'
-  ) {
+const isCheckInLocation =
+  pendingAction?.action === 'awaiting_checkin_location';
+
+const isCheckOutLocation =
+  pendingAction?.action === 'awaiting_checkout_location';
+
+if (!isCheckInLocation && !isCheckOutLocation) {
+  return `📍 Position mottagen.
+
+Latitud: ${latitude}
+Longitud: ${longitude}
+
+Skriv IN eller UT först.`;
+}
     return `📍 Position mottagen.
 
 Latitud: ${latitude}
@@ -263,11 +273,77 @@ Skicka en ny aktuell plats när du är på arbetsplatsen.`;
     return '❌ Ditt telefonnummer är inte registrerat.';
   }
 
+if (isCheckInLocation) {
   const result = await checkIn({
     driverId: driver.driver_id,
     sender,
     vehicleNumber: driver.vehicle_number
   });
+
+  if (result.alreadyOpen) {
+    await clearPendingAction(sender);
+
+    return '⚠️ Du är redan incheckad.';
+  }
+
+  await saveGpsLocation({
+    driverId: driver.driver_id,
+    sender,
+    latitude,
+    longitude,
+    accuracy: message.location.accuracy || null,
+    address: nearestLocation.name,
+    capturedAt: new Date(),
+    metadata: {
+      action: 'IN',
+      allowedLocationId: nearestLocation.id,
+      allowedLocationName: nearestLocation.name,
+      distanceMeters: Math.round(nearestDistanceMeters)
+    }
+  });
+
+  await clearPendingAction(sender);
+
+  return `✅ Incheckning registrerad.
+
+ID: ${driver.driver_id}
+Bil: ${driver.vehicle_number || 'Saknas'}
+Plats: ${nearestLocation.name}
+Avstånd: ${Math.round(nearestDistanceMeters)} meter`;
+}
+
+await saveGpsLocation({
+  driverId: driver.driver_id,
+  sender,
+  latitude,
+  longitude,
+  accuracy: message.location.accuracy || null,
+  address: nearestLocation.name,
+  capturedAt: new Date(),
+  metadata: {
+    action: 'UT',
+    allowedLocationId: nearestLocation.id,
+    allowedLocationName: nearestLocation.name,
+    distanceMeters: Math.round(nearestDistanceMeters)
+  }
+});
+
+await setPendingAction({
+  sender,
+  driverId: driver.driver_id,
+  action: 'awaiting_break_answer'
+});
+
+return `📍 Utcheckningsplats godkänd.
+
+Plats: ${nearestLocation.name}
+Avstånd: ${Math.round(nearestDistanceMeters)} meter
+
+Har du haft rast?
+
+Svara:
+JA – om du har haft rast
+NEJ – om du inte har haft rast`;
 
   if (result.alreadyOpen) {
     await clearPendingAction(sender);
