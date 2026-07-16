@@ -7,6 +7,7 @@ const {
   listMessages,
   getMessageByWhatsappId,
   getAllDrivers,
+  deactivateDriver,
   saveActivity,
   getDriverByPhone,
   checkIn,
