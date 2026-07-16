@@ -590,15 +590,9 @@ await setPendingAction({
 return `📍 Skicka din aktuella plats för att slutföra incheckningen.
 
 Du måste vara inom en godkänd arbetsplats.`;
-
-
-  return `✅ Incheckning registrerad.
-ID: ${driver.driver_id}
-Bil: ${driver.vehicle_number || '-'}
-Tid: ${swedishTime}
-
-Ha en bra arbetsdag!`;
 }
+
+
 if (normalized === 'ut' || normalized === 'out') {
   const driver = await getDriverByPhone(sender);
 
