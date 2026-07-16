@@ -183,5 +183,8 @@ async function deactivateAllowedLocation(name) {
 module.exports = {
   saveGpsLocation,
   getLatestGpsLocation,
-  getGpsHistory
+  getGpsHistory,
+  addAllowedLocation,
+  getAllowedLocations,
+  deactivateAllowedLocation
 };
