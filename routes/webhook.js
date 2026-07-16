@@ -670,6 +670,33 @@ if (normalized === 'status') {
 🕒 Senast uppdaterad:
 ${now}`;
 }
+if (/^avreg\b/i.test(normalized)) {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan använda AVREG.';
+  }
+
+  const parts = text.trim().split(/\s+/);
+  const driverId = parts[1];
+
+  if (!driverId) {
+    return 'Använd: AVREG 1001';
+  }
+
+  const driver = await deactivateDriver(driverId);
+
+  if (!driver) {
+    return `❌ Förare ${driverId} hittades inte eller är redan avregistrerad.`;
+  }
+
+  return `✅ Förare avregistrerad.
+
+ID: ${driver.driver_id}
+Namn: ${driver.name || 'Saknas'}
+
+Föraren kan inte längre använda IN eller UT.`;
+}
 if (normalized === 'aktiva') {
   const adminAllowed = await isAdmin(sender);
 
