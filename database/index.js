@@ -27,5 +27,4 @@ module.exports = {
   ...reports,
   ...pdfReports,
   ...pendingActions
-  ...workSessions, 
 };
