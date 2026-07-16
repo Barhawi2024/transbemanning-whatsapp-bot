@@ -160,6 +160,81 @@ async function getActiveSessions() {
 
   return result.rows;
 }
+async function updateTodaySessionTime({
+  driverId,
+  type,
+  time
+}) {
+  const normalizedType = String(type || '').toUpperCase();
+
+  if (!['IN', 'UT'].includes(normalizedType)) {
+    throw new Error('Typ måste vara IN eller UT.');
+  }
+
+  if (!/^\d{2}:\d{2}$/.test(time)) {
+    throw new Error('Tiden måste vara i format HH:MM.');
+  }
+
+  const sessionResult = await query(
+    `
+      SELECT *
+      FROM work_sessions
+      WHERE driver_id = $1
+        AND check_in_at >= date_trunc(
+          'day',
+          NOW() AT TIME ZONE 'Europe/Stockholm'
+        ) AT TIME ZONE 'Europe/Stockholm'
+        AND check_in_at < (
+          date_trunc(
+            'day',
+            NOW() AT TIME ZONE 'Europe/Stockholm'
+          ) + INTERVAL '1 day'
+        ) AT TIME ZONE 'Europe/Stockholm'
+      ORDER BY check_in_at DESC
+      LIMIT 1
+    `,
+    [driverId]
+  );
+
+  const session = sessionResult.rows[0];
+
+  if (!session) {
+    return {
+      notFound: true
+    };
+  }
+
+  const column =
+    normalizedType === 'IN'
+      ? 'check_in_at'
+      : 'check_out_at';
+
+  const updateResult = await query(
+    `
+      UPDATE work_sessions
+      SET
+        ${column} = (
+          date_trunc(
+            'day',
+            NOW() AT TIME ZONE 'Europe/Stockholm'
+          ) + $2::time
+        ) AT TIME ZONE 'Europe/Stockholm',
+        status = CASE
+          WHEN $3 = 'UT' THEN 'closed'
+          ELSE status
+        END,
+        updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `,
+    [session.id, time, normalizedType]
+  );
+
+  return {
+    notFound: false,
+    session: updateResult.rows[0]
+  };
+}
 module.exports = {
   checkIn,
   checkOut,
@@ -168,4 +243,6 @@ module.exports = {
   getMonthlySessions,
   getMonthlyMinutes,
   getActiveSessions
+  updateTodaySessionTime
+  
 };
