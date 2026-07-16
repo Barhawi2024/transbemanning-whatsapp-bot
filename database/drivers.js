@@ -113,7 +113,20 @@ async function deactivateDriver(driverId) {
 
   return result.rows[0] || null;
 }
+async function deactivateDriver(driverId) {
+  const result = await query(
+    `
+      UPDATE drivers
+      SET is_active = FALSE
+      WHERE driver_id = $1
+        AND is_active = TRUE
+      RETURNING *
+    `,
+    [driverId]
+  );
 
+  return result.rows[0] || null;
+}
 module.exports = {
   createDriver,
   getDriver,
