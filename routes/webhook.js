@@ -166,8 +166,14 @@ async function sendWhatsAppDocument(to, filePath, filename) {
   );
 }
 async function handleIncomingMessage(message, contact) {
-  const text = message.text?.body || '';
-  if (!text.trim()) {
+const sender = contact?.wa_id || message.from || 'unknown';
+const isLocation =
+  message.type === 'location' &&
+  message.location;
+
+const text = message.text?.body || '';
+
+if (!text.trim() && !isLocation) {
   return null;
 }
   if (message.id) {
