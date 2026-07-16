@@ -617,6 +617,30 @@ Incheckad: ${checkInTime}`;
 
 ${activeList}`;
 }
+if (
+  normalized === 'hjälp' ||
+  normalized === 'hjalp' ||
+  normalized === 'help'
+) {
+  return `📋 TransBemanning Bot – Kommandon
+
+👷 Förare:
+IN – Checka in
+UT – Checka ut
+JA / NEJ – Svara på rastfrågan
+15 / 30 / 45 – Ange rasttid
+GPS – Skicka din position
+
+👨‍💼 Admin:
+REG 1001 0700000000 ABC123 – Registrera förare
+LISTA – Visa alla förare
+AKTIVA – Visa incheckade förare
+RAPPORT 1001 2026-07 – Månadsrapport
+ADMIN RAPPORT 2026-07 – Alla förares timmar
+PDF 1001 2026-07 – Skicka PDF-rapport
+
+HJÄLP – Visa denna lista`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
