@@ -187,7 +187,7 @@ if (!text.trim() && !isLocation) {
   const normalized = text.trim().toLowerCase();
   console.log("TEXT:", text);
 console.log("NORMALIZED:", normalized);
-  const sender = contact?.wa_id || message.from || 'unknown';
+
 const pendingAction = await getPendingAction(sender);
 
 if (pendingAction?.action === 'awaiting_break_answer') {
