@@ -19,7 +19,10 @@ const {
   updateTodaySessionTime,
   setPendingAction,
   getPendingAction,
-  clearPendingAction
+  clearPendingAction,
+  addAllowedLocation,
+  getAllowedLocations,
+  deactivateAllowedLocation
 } = require('../database');
 const { registerDriver } = require('../services/driver');
 const {
@@ -651,6 +654,52 @@ Bil: ${driver.vehicle_number || '-'}`;
   return `👥 Registrerade förare: ${drivers.length}
 
 ${driverList}`;
+}
+if (/^plats\s+lägg\s+till\b/i.test(normalized)) {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan lägga till platser.';
+  }
+
+  const match = text.trim().match(
+    /^plats\s+lägg\s+till\s+(.+?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(\d+)$/i
+  );
+
+  if (!match) {
+    return `Använd:
+
+PLATS LÄGG TILL Terminal Helsingborg 56.041706 12.709762 25`;
+  }
+
+  const name = match[1].trim();
+  const latitude = Number(match[2]);
+  const longitude = Number(match[3]);
+  const radiusMeters = Number(match[4]);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    !Number.isInteger(radiusMeters) ||
+    radiusMeters < 5 ||
+    radiusMeters > 1000
+  ) {
+    return '❌ Kontrollera koordinaterna och radien. Radien måste vara 5–1000 meter.';
+  }
+
+  const location = await addAllowedLocation({
+    name,
+    latitude,
+    longitude,
+    radiusMeters
+  });
+
+  return `✅ Tillåten plats sparad.
+
+Namn: ${location.name}
+Latitud: ${location.latitude}
+Longitud: ${location.longitude}
+Radie: ${location.radius_meters} meter`;
 }
 if (normalized === 'aktiva') {
   const adminAllowed = await isAdmin(sender);
