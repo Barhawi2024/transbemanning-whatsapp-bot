@@ -146,7 +146,10 @@ async function setupDatabase() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-
+await query(`
+  ALTER TABLE work_sessions
+  ADD COLUMN IF NOT EXISTS warning_sent BOOLEAN NOT NULL DEFAULT FALSE;
+`);
   console.log('✅ Database tables ready');
 }
 
