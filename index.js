@@ -23,7 +23,6 @@ async function startServer() {
   try {
  await setupDatabase();
 
-await sendMonthlyReportEmail();
 
 app.listen(PORT, () => {
     console.log(`✅ Server listening on port ${PORT}`);
