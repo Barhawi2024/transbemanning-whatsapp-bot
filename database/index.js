@@ -11,7 +11,7 @@ const gps = require('./gps');
 const reports = require('./reports');
 const pdfReports = require('./pdfReports');
 const pendingActions = require('./pendingActions');
-
+const workSessions = require('./workSessions');
 module.exports = {
   pool,
   query,
@@ -27,4 +27,6 @@ module.exports = {
   ...reports,
   ...pdfReports,
   ...pendingActions
+  ...workSessions,
+  
 };
