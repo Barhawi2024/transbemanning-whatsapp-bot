@@ -52,14 +52,15 @@ async function checkOut({
 
   const result = await query(
     `
-      UPDATE work_sessions
-      SET
-        check_out_at = $1,
-        break_minutes = $2,
-        status = 'closed',
-        updated_at = NOW()
-      WHERE id = $3
-      RETURNING *
+     UPDATE work_sessions
+SET
+    check_out_at = $1,
+    break_minutes = $2,
+    status = 'closed',
+    warning_sent = FALSE,
+    updated_at = NOW()
+WHERE id = $3
+RETURNING * 
     `,
     [checkOutAt, breakMinutes, openSession.id]
   );
