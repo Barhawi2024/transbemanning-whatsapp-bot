@@ -641,6 +641,32 @@ PDF 1001 2026-07 – Skicka PDF-rapport
 
 HJÄLP – Visa denna lista`;
 }
+if (normalized === 'status') {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan använda STATUS.';
+  }
+
+  const drivers = await getAllDrivers();
+  const activeSessions = await getActiveSessions();
+
+  const now = new Date().toLocaleString('sv-SE', {
+    timeZone: 'Europe/Stockholm'
+  });
+
+  return `🟢 TransBemanning Bot
+
+✅ Server: Online
+✅ Databas: Ansluten
+✅ WhatsApp: Ansluten
+
+👷 Registrerade förare: ${drivers.length}
+🟢 Aktiva pass: ${activeSessions.length}
+
+🕒 Senast uppdaterad:
+${now}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
