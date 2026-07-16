@@ -6,7 +6,7 @@ const {
   getActiveSessions
 } = require("../database");
 
-const LIMIT_MINUTES = 8 * 60 + 30;
+const LIMIT_MINUTES = 1;
 
 async function sendWhatsAppText(to, body) {
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
