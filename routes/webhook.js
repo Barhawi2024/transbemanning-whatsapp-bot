@@ -501,11 +501,15 @@ if (normalized === 'in') {
     return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
   }
 
-  const result = await checkIn({
-    driverId: driver.driver_id,
-    sender,
-    vehicleNumber: driver.vehicle_number
-  });
+await setPendingAction({
+  sender,
+  driverId: driver.driver_id,
+  action: 'awaiting_checkin_location'
+});
+
+return `📍 Skicka din aktuella plats för att slutföra incheckningen.
+
+Du måste vara inom en godkänd arbetsplats.`;
 
   if (result.alreadyOpen) {
     const previousTime = new Date(
