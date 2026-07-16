@@ -23,6 +23,7 @@ const {
   clearPendingAction,
   addAllowedLocation,
   getAllowedLocations,
+  saveGpsLocation,
   deactivateAllowedLocation
 } = require('../database');
 const { registerDriver } = require('../services/driver');
