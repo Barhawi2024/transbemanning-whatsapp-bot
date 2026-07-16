@@ -244,5 +244,4 @@ module.exports = {
   getMonthlyMinutes,
   getActiveSessions
   updateTodaySessionTime
-  
 };
