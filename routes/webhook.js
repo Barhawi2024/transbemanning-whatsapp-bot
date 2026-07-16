@@ -398,7 +398,48 @@ await sendWhatsAppDocument(
    return null;
 }
 if (/^ändra\b/i.test(normalized)) {
-    return "✏️ ÄNDRA-funktionen kommer snart.";
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return "❌ Endast administratören kan använda ÄNDRA.";
+  }
+
+  const parts = text.trim().split(/\s+/);
+  const driverId = parts[1];
+  const type = parts[2]?.toUpperCase();
+  const time = parts[3];
+
+  if (!driverId || !type || !time) {
+    return "Använd: ÄNDRA 1001 IN 07:15";
+  }
+
+  if (!["IN", "UT"].includes(type)) {
+    return "❌ Du kan bara använda IN eller UT.";
+  }
+
+  if (!/^\d{2}:\d{2}$/.test(time)) {
+    return "❌ Tiden måste skrivas som HH:MM, exempel 07:15.";
+  }
+
+  const result = await updateTodaySessionTime({
+    driverId,
+    type,
+    time
+  });
+
+  if (result.notFound) {
+    return `❌ Inget arbetspass hittades idag för förare ${driverId}.`;
+  }
+
+  const session = result.session;
+
+  return `✅ Tiden har ändrats.
+
+Förare: ${driverId}
+Typ: ${type}
+Ny tid: ${time}
+
+Pass-ID: ${session.id}`;
 }
   if (normalized.includes('excel')) {
     const messages = await listMessages();
