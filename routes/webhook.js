@@ -357,7 +357,9 @@ if (/^admin rapport\b/i.test(normalized)) {
 }
 if (/^pdf\b/i.test(normalized)) {
     const adminAllowed = await isAdmin(sender);
-
+if (/^ändra\b/i.test(normalized)) {
+    return "✏️ ÄNDRA-funktionen kommer snart.";
+}
     if (!adminAllowed) {
         return '❌ Endast administratören kan skapa PDF-rapporter.';
     }
