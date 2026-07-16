@@ -8,6 +8,7 @@ const {
   getMessageByWhatsappId,
   getAllDrivers,
   deactivateDriver,
+  permanentlyDeleteDriver,
   saveActivity,
   getDriverByPhone,
   checkIn,
@@ -879,18 +880,28 @@ if (/^avreg\b/i.test(normalized)) {
     return 'Använd: AVREG 1001';
   }
 
-  const driver = await deactivateDriver(driverId);
+  const result = await permanentlyDeleteDriver(driverId);
 
-  if (!driver) {
-    return `❌ Förare ${driverId} hittades inte eller är redan avregistrerad.`;
+  if (result.notFound) {
+    return `❌ Förare ${driverId} hittades inte.`;
   }
 
-  return `✅ Förare avregistrerad.
+  if (result.hasOpenSession) {
+    return `❌ Föraren är fortfarande incheckad.
 
-ID: ${driver.driver_id}
-Namn: ${driver.name || 'Saknas'}
+ID: ${driverId}
+Namn: ${result.driver?.name || 'Saknas'}
 
-Föraren kan inte längre använda IN eller UT.`;
+Be föraren checka ut först eller använd ÄNDRA för att avsluta arbetspasset.`;
+  }
+
+  return `✅ Förare borttagen permanent.
+
+ID: ${result.driver.driver_id}
+Namn: ${result.driver.name || 'Saknas'}
+Telefon: ${result.driver.phone || 'Saknas'}
+
+All tillhörande information har raderats från systemet.`;
 }
 if (normalized === 'aktiva') {
   const adminAllowed = await isAdmin(sender);
