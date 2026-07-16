@@ -242,6 +242,6 @@ module.exports = {
   getSessionsByDriver,
   getMonthlySessions,
   getMonthlyMinutes,
-  getActiveSessions
+  getActiveSessions,
   updateTodaySessionTime
 };
