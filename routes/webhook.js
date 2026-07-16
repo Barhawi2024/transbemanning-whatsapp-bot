@@ -649,27 +649,21 @@ Du måste vara inom en godkänd arbetsplats.`;
 
 
 if (normalized === 'ut' || normalized === 'out') {
-await setPendingAction({
-  sender,
-  driverId: driver.driver_id,
-  action: 'awaiting_checkout_location'
-});
+  const driver = await getDriverByPhone(sender);
 
-return `📍 Skicka din aktuella plats för att slutföra utcheckningen.
-
-Du måste vara inom en godkänd arbetsplats.`;
+  if (!driver) {
+    return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
+  }
 
   await setPendingAction({
     sender,
     driverId: driver.driver_id,
-    action: 'awaiting_break_answer'
+    action: 'awaiting_checkout_location'
   });
 
-  return `⏸️ Har du haft rast under arbetspasset?
+  return `📍 Skicka din aktuella plats för att slutföra utcheckningen.
 
-Svara:
-JA – om du har haft rast
-NEJ – om du inte har haft rast`;
+Du måste vara inom en godkänd arbetsplats.`;
 }
 
 if (/^rapport\b/.test(normalized)) {
