@@ -46,35 +46,30 @@ async function checkLongSessions() {
       return;
     }
 
-    const activeSessions = await getActiveSessions();
-    const now = new Date();
+    const result = await query(
+      `
+        SELECT
+          ws.id,
+          ws.driver_id,
+          ws.vehicle_number,
+          ws.check_in_at,
+          d.name
+        FROM work_sessions ws
+        LEFT JOIN drivers d
+          ON d.driver_id = ws.driver_id
+        WHERE ws.check_out_at IS NULL
+          AND ws.warning_sent = FALSE
+          AND ws.check_in_at <= NOW() - INTERVAL '8 hours 30 minutes'
+        ORDER BY ws.check_in_at ASC
+      `
+    );
 
-    for (const session of activeSessions) {
+    for (const session of result.rows) {
       const checkInTime = new Date(session.check_in_at);
 
       const activeMinutes = Math.floor(
-        (now.getTime() - checkInTime.getTime()) / 60000
+        (Date.now() - checkInTime.getTime()) / 60000
       );
-
-      if (activeMinutes < LIMIT_MINUTES) {
-        continue;
-      }
-
-      const alertKey = `long-session-${session.id}`;
-
-      const existingAlert = await query(
-        `
-          SELECT 1
-          FROM activities
-          WHERE action = $1
-          LIMIT 1
-        `,
-        [alertKey]
-      );
-
-      if (existingAlert.rows.length) {
-        continue;
-      }
 
       const hours = Math.floor(activeMinutes / 60);
       const minutes = activeMinutes % 60;
@@ -85,7 +80,8 @@ async function checkLongSessions() {
 
       const message = `⚠️ Långt arbetspass
 
-Förare: ${session.driver_id}
+Förare: ${session.name || session.driver_id}
+ID: ${session.driver_id}
 Bil: ${session.vehicle_number || "Saknas"}
 Incheckad: ${swedishTime}
 Aktiv tid: ${hours} h ${String(minutes).padStart(2, "0")} min
@@ -96,22 +92,17 @@ Föraren är fortfarande incheckad.`;
 
       await query(
         `
-          INSERT INTO activities (
-            sender,
-            action,
-            body
-          )
-          VALUES ($1, $2, $3)
+          UPDATE work_sessions
+          SET
+            warning_sent = TRUE,
+            updated_at = NOW()
+          WHERE id = $1
         `,
-        [
-          adminPhone,
-          alertKey,
-          message
-        ]
+        [session.id]
       );
 
       console.log(
-        `✅ Långpassvarning skickad för förare ${session.driver_id}`
+        `✅ Långpassvarning skickad en gång för förare ${session.driver_id}`
       );
     }
   } catch (error) {
@@ -120,20 +111,6 @@ Föraren är fortfarande incheckad.`;
       error.response?.data || error.message
     );
   }
-}
-
-function startLongSessionAlertJob() {
-  cron.schedule(
-    "*/10 * * * *",
-    checkLongSessions,
-    {
-      timezone: "Europe/Stockholm"
-    }
-  );
-
-  console.log(
-    "✅ Kontroll av pass över 8 h 30 min körs var tionde minut."
-  );
 }
 
 module.exports = {
