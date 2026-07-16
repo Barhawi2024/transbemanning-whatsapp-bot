@@ -112,7 +112,19 @@ Föraren är fortfarande incheckad.`;
     );
   }
 }
+function startLongSessionAlertJob() {
+  cron.schedule(
+    "*/10 * * * *",
+    checkLongSessions,
+    {
+      timezone: "Europe/Stockholm"
+    }
+  );
 
+  console.log(
+    "✅ Kontroll av pass över 8 h 30 min körs var tionde minut."
+  );
+}
 module.exports = {
   startLongSessionAlertJob,
   checkLongSessions
