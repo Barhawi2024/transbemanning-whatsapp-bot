@@ -581,7 +581,6 @@ if (normalized === 'in') {
   if (!driver) {
     return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
   }
-
 await setPendingAction({
   sender,
   driverId: driver.driver_id,
@@ -592,23 +591,6 @@ return `📍 Skicka din aktuella plats för att slutföra incheckningen.
 
 Du måste vara inom en godkänd arbetsplats.`;
 
-  if (result.alreadyOpen) {
-    const previousTime = new Date(
-      result.session.check_in_at
-    ).toLocaleString('sv-SE', {
-      timeZone: 'Europe/Stockholm'
-    });
-
-    return `⚠️ Du är redan incheckad.\nTid: ${previousTime}`;
-  }
-
-  await saveActivity({
-    driverId: driver.driver_id,
-    sender,
-    action: 'check-in',
-    commandText: text,
-    vehicleNumber: driver.vehicle_number
-  });
 
   return `✅ Incheckning registrerad.
 ID: ${driver.driver_id}
