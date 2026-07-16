@@ -6,6 +6,9 @@ const webhookRoutes = require('./routes/webhook');
 const { setupDatabase } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 8080;
+const {
+  startLongSessionAlertJob
+} = require("./jobs/longSessionAlert");
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -21,7 +24,8 @@ async function startServer() {
 
 
 app.listen(PORT, () => {
-    console.log(`✅ Server listening on port ${PORT}`);
+  console.log(`✅ Server listening on port ${PORT}`);
+  startLongSessionAlertJob();
 });
   } catch (error) {
     console.error('❌ Kunde inte starta servern:', error);
