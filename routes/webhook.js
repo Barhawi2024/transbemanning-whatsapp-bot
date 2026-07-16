@@ -189,7 +189,19 @@ if (!text.trim() && !isLocation) {
 console.log("NORMALIZED:", normalized);
 
 const pendingAction = await getPendingAction(sender);
+if (isLocation) {
+  const latitude = Number(message.location.latitude);
+  const longitude = Number(message.location.longitude);
 
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return '❌ Kunde inte läsa positionen. Försök skicka platsen igen.';
+  }
+
+  return `📍 Position mottagen.
+
+Latitud: ${latitude}
+Longitud: ${longitude}`;
+}
 if (pendingAction?.action === 'awaiting_break_answer') {
   if (normalized === 'ja') {
     await setPendingAction({
