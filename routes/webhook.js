@@ -15,6 +15,7 @@ const {
   saveCommand,
   getDriverMonthlyReport,
   isAdmin,
+  updateTodaySessionTime,
   setPendingAction,
   getPendingAction,
   clearPendingAction
