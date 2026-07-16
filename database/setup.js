@@ -150,6 +150,18 @@ await query(`
   ALTER TABLE work_sessions
   ADD COLUMN IF NOT EXISTS warning_sent BOOLEAN NOT NULL DEFAULT FALSE;
 `);
+await query(`
+  CREATE TABLE IF NOT EXISTS allowed_locations (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
+    radius_meters INTEGER NOT NULL DEFAULT 25,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+`);
   console.log('✅ Database tables ready');
 }
 
