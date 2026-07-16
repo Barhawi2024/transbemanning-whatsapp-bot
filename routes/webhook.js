@@ -311,30 +311,30 @@ Bil: ${driver.vehicle_number || 'Saknas'}
 Plats: ${nearestLocation.name}
 Avstånd: ${Math.round(nearestDistanceMeters)} meter`;
 }
+if (isCheckOutLocation) {
+  await saveGpsLocation({
+    driverId: driver.driver_id,
+    sender,
+    latitude,
+    longitude,
+    accuracy: message.location.accuracy || null,
+    address: nearestLocation.name,
+    capturedAt: new Date(),
+    metadata: {
+      action: 'UT',
+      allowedLocationId: nearestLocation.id,
+      allowedLocationName: nearestLocation.name,
+      distanceMeters: Math.round(nearestDistanceMeters)
+    }
+  });
 
-await saveGpsLocation({
-  driverId: driver.driver_id,
-  sender,
-  latitude,
-  longitude,
-  accuracy: message.location.accuracy || null,
-  address: nearestLocation.name,
-  capturedAt: new Date(),
-  metadata: {
-    action: 'UT',
-    allowedLocationId: nearestLocation.id,
-    allowedLocationName: nearestLocation.name,
-    distanceMeters: Math.round(nearestDistanceMeters)
-  }
-});
+  await setPendingAction({
+    sender,
+    driverId: driver.driver_id,
+    action: 'awaiting_break_answer'
+  });
 
-await setPendingAction({
-  sender,
-  driverId: driver.driver_id,
-  action: 'awaiting_break_answer'
-});
-
-return `📍 Utcheckningsplats godkänd.
+  return `📍 Utcheckningsplats godkänd.
 
 Plats: ${nearestLocation.name}
 Avstånd: ${Math.round(nearestDistanceMeters)} meter
@@ -344,24 +344,9 @@ Har du haft rast?
 Svara:
 JA – om du har haft rast
 NEJ – om du inte har haft rast`;
-
-  if (result.alreadyOpen) {
-    await clearPendingAction(sender);
-
-    return '⚠️ Du är redan incheckad.';
-  }
-
-  await clearPendingAction(sender);
-
-  return `✅ Incheckning registrerad.
-
-ID: ${driver.driver_id}
-Bil: ${driver.vehicle_number || 'Saknas'}
-Plats: ${nearestLocation.name}
-Avstånd: ${Math.round(nearestDistanceMeters)} meter
-Latitud: ${latitude}
-Longitud: ${longitude}`;
 }
+}
+
 if (pendingAction?.action === 'awaiting_break_answer') {
   if (normalized === 'ja') {
     await setPendingAction({
