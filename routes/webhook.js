@@ -594,11 +594,15 @@ Du måste vara inom en godkänd arbetsplats.`;
 
 
 if (normalized === 'ut' || normalized === 'out') {
-  const driver = await getDriverByPhone(sender);
+await setPendingAction({
+  sender,
+  driverId: driver.driver_id,
+  action: 'awaiting_checkout_location'
+});
 
-  if (!driver) {
-    return '❌ Ditt telefonnummer är inte registrerat. Kontakta administratören.';
-  }
+return `📍 Skicka din aktuella plats för att slutföra utcheckningen.
+
+Du måste vara inom en godkänd arbetsplats.`;
 
   await setPendingAction({
     sender,
