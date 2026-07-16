@@ -163,6 +163,7 @@ async function getActiveSessions() {
 }
 async function updateTodaySessionTime({
   driverId,
+  date,
   type,
   time
 }) {
@@ -181,20 +182,12 @@ async function updateTodaySessionTime({
       SELECT *
       FROM work_sessions
       WHERE driver_id = $1
-        AND check_in_at >= date_trunc(
-          'day',
-          NOW() AT TIME ZONE 'Europe/Stockholm'
-        ) AT TIME ZONE 'Europe/Stockholm'
-        AND check_in_at < (
-          date_trunc(
-            'day',
-            NOW() AT TIME ZONE 'Europe/Stockholm'
-          ) + INTERVAL '1 day'
-        ) AT TIME ZONE 'Europe/Stockholm'
+AND check_in_at >= $2::date AT TIME ZONE 'Europe/Stockholm'
+AND check_in_at < ($2::date + INTERVAL '1 day') AT TIME ZONE 'Europe/Stockholm'
       ORDER BY check_in_at DESC
       LIMIT 1
     `,
-    [driverId]
+    [driverId, date]
   );
 
   const session = sessionResult.rows[0];
@@ -214,21 +207,18 @@ async function updateTodaySessionTime({
     `
       UPDATE work_sessions
       SET
-        ${column} = (
-          date_trunc(
-            'day',
-            NOW() AT TIME ZONE 'Europe/Stockholm'
-          ) + $2::time
-        ) AT TIME ZONE 'Europe/Stockholm',
-        status = CASE
-          WHEN $3 = 'UT' THEN 'closed'
-          ELSE status
-        END,
+      ${column} = (
+  $2::date + $3::time
+) AT TIME ZONE 'Europe/Stockholm',
+status = CASE
+  WHEN $4 = 'UT' THEN 'closed'
+  ELSE status
+END,
         updated_at = NOW()
       WHERE id = $1
       RETURNING *
     `,
-    [session.id, time, normalizedType]
+    [session.id, date, time, normalizedType]
   );
 
   return {
