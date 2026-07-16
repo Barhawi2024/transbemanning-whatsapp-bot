@@ -338,6 +338,8 @@ Svara:
 JA – om du har haft rast
 NEJ – om du inte har haft rast`;
 }
+}
+
 if (pendingAction?.action === 'awaiting_break_answer') {
   if (normalized === 'ja') {
     await setPendingAction({
