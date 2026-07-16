@@ -273,7 +273,7 @@ Skicka en ny aktuell plats när du är på arbetsplatsen.`;
     return '❌ Ditt telefonnummer är inte registrerat.';
   }
 
-if (isCheckInLocation) {
+if (isLocation && isCheckInLocation) {
   const result = await checkIn({
     driverId: driver.driver_id,
     sender,
@@ -311,7 +311,7 @@ Bil: ${driver.vehicle_number || 'Saknas'}
 Plats: ${nearestLocation.name}
 Avstånd: ${Math.round(nearestDistanceMeters)} meter`;
 }
-if (isCheckOutLocation) {
+if (isLocation && isCheckOutLocation) {
   await saveGpsLocation({
     driverId: driver.driver_id,
     sender,
