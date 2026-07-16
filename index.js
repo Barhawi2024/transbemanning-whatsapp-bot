@@ -22,7 +22,6 @@ async function startServer() {
 
 app.listen(PORT, () => {
     console.log(`✅ Server listening on port ${PORT}`);
-    startMonthlyReportJob();
 });
   } catch (error) {
     console.error('❌ Kunde inte starta servern:', error);
