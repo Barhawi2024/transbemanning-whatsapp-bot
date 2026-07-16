@@ -667,6 +667,48 @@ if (normalized === 'status') {
 🕒 Senast uppdaterad:
 ${now}`;
 }
+if (normalized === 'aktiva') {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan använda AKTIVA.';
+  }
+
+  const activeSessions = await getActiveSessions();
+
+  if (!activeSessions.length) {
+    return '✅ Inga aktiva förare.';
+  }
+
+  const now = new Date();
+
+  const activeText = activeSessions
+    .map((session, index) => {
+      const checkInTime = new Date(session.check_in_at);
+
+      const totalMinutes = Math.max(
+        0,
+        Math.floor((now.getTime() - checkInTime.getTime()) / 60000)
+      );
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      const swedishTime = checkInTime.toLocaleString('sv-SE', {
+        timeZone: 'Europe/Stockholm'
+      });
+
+      return `${index + 1}. 👤 ID: ${session.driver_id}
+🚚 Bil: ${session.vehicle_number || 'Saknas'}
+🕒 Incheckad: ${swedishTime}
+⏱️ Aktiv tid: ${hours} h ${String(minutes).padStart(2, '0')} min`;
+    })
+    .join('\n\n');
+
+  return `🟢 Aktiva förare
+
+${activeText}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
