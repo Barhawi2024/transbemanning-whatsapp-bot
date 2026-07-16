@@ -120,7 +120,66 @@ async function getGpsHistory({
 
   return result.rows;
 }
+async function addAllowedLocation({
+  name,
+  latitude,
+  longitude,
+  radiusMeters = 25
+}) {
+  const result = await query(
+    `
+      INSERT INTO allowed_locations (
+        name,
+        latitude,
+        longitude,
+        radius_meters,
+        is_active
+      )
+      VALUES ($1, $2, $3, $4, TRUE)
+      ON CONFLICT (name)
+      DO UPDATE SET
+        latitude = EXCLUDED.latitude,
+        longitude = EXCLUDED.longitude,
+        radius_meters = EXCLUDED.radius_meters,
+        is_active = TRUE,
+        updated_at = NOW()
+      RETURNING *
+    `,
+    [name, latitude, longitude, radiusMeters]
+  );
 
+  return result.rows[0];
+}
+
+async function getAllowedLocations() {
+  const result = await query(
+    `
+      SELECT *
+      FROM allowed_locations
+      WHERE is_active = TRUE
+      ORDER BY name ASC
+    `
+  );
+
+  return result.rows;
+}
+
+async function deactivateAllowedLocation(name) {
+  const result = await query(
+    `
+      UPDATE allowed_locations
+      SET
+        is_active = FALSE,
+        updated_at = NOW()
+      WHERE LOWER(name) = LOWER($1)
+        AND is_active = TRUE
+      RETURNING *
+    `,
+    [name]
+  );
+
+  return result.rows[0] || null;
+}
 module.exports = {
   saveGpsLocation,
   getLatestGpsLocation,
