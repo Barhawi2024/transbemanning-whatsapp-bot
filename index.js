@@ -4,10 +4,6 @@ const express = require('express');
 
 const webhookRoutes = require('./routes/webhook');
 const { setupDatabase } = require('./database');
-const {
-  startMonthlyReportJob,
-  sendMonthlyReportEmail
-} = require("./jobs/monthlyReport");
 const app = express();
 const PORT = process.env.PORT || 8080;
 
