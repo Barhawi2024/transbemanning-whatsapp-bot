@@ -197,6 +197,117 @@ if (!text.trim() && !isLocation) {
 console.log("NORMALIZED:", normalized);
 
 const pendingAction = await getPendingAction(sender);
+// Administratören skriver meddelandet som ska skickas till alla
+if (
+  pendingAction?.action === 'awaiting_broadcast_message' &&
+  !isLocation
+) {
+  if (normalized === 'avbryt') {
+    await clearPendingAction(sender);
+    return '✅ Utskicket har avbrutits.';
+  }
+
+  const messageText = text.trim();
+
+  if (!messageText) {
+    return '❌ Meddelandet får inte vara tomt.';
+  }
+
+  const drivers = await getAllDrivers();
+
+  const activeDrivers = drivers.filter(
+    (driver) => driver.is_active !== false && driver.phone
+  );
+
+  if (activeDrivers.length === 0) {
+    await clearPendingAction(sender);
+    return '❌ Det finns inga aktiva registrerade förare.';
+  }
+
+  await setPendingAction({
+    sender,
+    driverId: null,
+    action: 'awaiting_broadcast_confirmation',
+    metadata: {
+      messageText,
+      recipientCount: activeDrivers.length
+    }
+  });
+
+  return `📢 Du är på väg att skicka följande meddelande:
+
+${messageText}
+
+👥 Mottagare: ${activeDrivers.length} förare
+
+Svara JA för att skicka.
+Svara AVBRYT för att avbryta.`;
+}
+
+
+// Administratören bekräftar utskicket
+if (
+  pendingAction?.action === 'awaiting_broadcast_confirmation' &&
+  !isLocation
+) {
+  if (normalized === 'avbryt') {
+    await clearPendingAction(sender);
+    return '✅ Utskicket har avbrutits.';
+  }
+
+  if (normalized !== 'ja') {
+    return `Svara:
+
+JA – skicka meddelandet
+AVBRYT – avbryt utskicket`;
+  }
+
+  const messageText = pendingAction.metadata?.messageText;
+
+  if (!messageText) {
+    await clearPendingAction(sender);
+    return '❌ Meddelandet saknas. Försök igen med MEDDELANDE ALLA.';
+  }
+
+  const drivers = await getAllDrivers();
+
+  const activeDrivers = drivers.filter(
+    (driver) => driver.is_active !== false && driver.phone
+  );
+
+  let succeeded = 0;
+  let failed = 0;
+
+  for (const driver of activeDrivers) {
+    try {
+      await sendWhatsAppText(
+        driver.phone,
+        `📢 Viktig information från TransBemanning
+
+${messageText}
+
+TransBemanning AB`
+      );
+
+      succeeded++;
+    } catch (error) {
+      console.error(
+        `Kunde inte skicka meddelande till ${driver.phone}:`,
+        error.response?.data || error.message
+      );
+
+      failed++;
+    }
+  }
+
+  await clearPendingAction(sender);
+
+  return `✅ Utskicket är klart.
+
+👥 Mottagare: ${activeDrivers.length}
+✅ Lyckades: ${succeeded}
+❌ Misslyckades: ${failed}`;
+}
 if (isLocation) {
   const latitude = Number(message.location.latitude);
   const longitude = Number(message.location.longitude);
