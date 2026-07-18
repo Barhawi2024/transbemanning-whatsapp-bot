@@ -974,6 +974,54 @@ if (normalized === 'aktiva') {
 
 ${activeText}`;
 }
+if (/^ny\s+plats\b/i.test(normalized)) {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan lägga till arbetsplatser.';
+  }
+
+  const match = text.trim().match(
+    /^ny\s+plats\s+(.+?)(?:\s+(\d+))?$/i
+  );
+
+  if (!match) {
+    return `Använd:
+
+NY PLATS Helsingborg Terminal
+
+eller:
+
+NY PLATS Helsingborg Terminal 150`;
+  }
+
+  const name = match[1].trim();
+  const radiusMeters = match[2] ? Number(match[2]) : 150;
+
+  if (
+    !Number.isInteger(radiusMeters) ||
+    radiusMeters < 5 ||
+    radiusMeters > 1000
+  ) {
+    return '❌ Radien måste vara mellan 5 och 1000 meter.';
+  }
+
+  await setPendingAction({
+    sender,
+    driverId: null,
+    action: 'awaiting_new_allowed_location',
+    metadata: {
+      name,
+      radiusMeters
+    }
+  });
+
+  return `📍 Skicka din aktuella plats för att registrera:
+
+${name}
+
+Radie: ${radiusMeters} meter`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
