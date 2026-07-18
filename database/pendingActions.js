@@ -3,7 +3,8 @@ const { query } = require('./connection');
 async function setPendingAction({
   sender,
   driverId = null,
-  action
+  action,
+  metadata = null
 }) {
   const result = await query(
     `
@@ -11,17 +12,24 @@ async function setPendingAction({
         sender,
         driver_id,
         action,
+        metadata,
         updated_at
       )
-      VALUES ($1, $2, $3, NOW())
+      VALUES ($1, $2, $3, $4::jsonb, NOW())
       ON CONFLICT (sender)
       DO UPDATE SET
         driver_id = EXCLUDED.driver_id,
         action = EXCLUDED.action,
+        metadata = EXCLUDED.metadata,
         updated_at = NOW()
       RETURNING *
     `,
-    [sender, driverId, action]
+    [
+      sender,
+      driverId,
+      action,
+      metadata ? JSON.stringify(metadata) : null
+    ]
   );
 
   return result.rows[0];
