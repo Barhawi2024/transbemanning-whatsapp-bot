@@ -1146,6 +1146,28 @@ TA BORT ADMIN 46701234567`;
 
 Telefon: ${phone}`;
 }
+if (text.trim().toLowerCase() === 'adminlista') {
+  if (!(await isAdmin(sender))) {
+    return '❌ Endast administratörer kan se adminlistan.';
+  }
+
+  const admins = await listAdmins();
+
+  if (!admins.length) {
+    return 'ℹ️ Det finns inga aktiva administratörer.';
+  }
+
+  const adminList = admins
+    .map((admin, index) => {
+      const name = admin.name ? ` – ${admin.name}` : '';
+      return `${index + 1}. ${admin.phone}${name}`;
+    })
+    .join('\n');
+
+  return `👑 Aktiva administratörer: ${admins.length}
+
+${adminList}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
