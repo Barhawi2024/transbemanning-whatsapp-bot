@@ -1040,6 +1040,59 @@ ${name}
 
 Radie: ${radiusMeters} meter`;
 }
+if (normalized === 'platser') {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan se arbetsplatser.';
+  }
+
+  const locations = await getAllowedLocations();
+
+  if (!locations.length) {
+    return 'ℹ️ Det finns inga registrerade arbetsplatser.';
+  }
+
+  const locationList = locations
+    .map((location, index) => {
+      return `${index + 1}. ${location.name}
+Radie: ${location.radius_meters} meter
+Latitud: ${location.latitude}
+Longitud: ${location.longitude}`;
+    })
+    .join('\n\n');
+
+  return `📍 Registrerade arbetsplatser: ${locations.length}
+
+${locationList}`;
+}
+if (/^ta\s+bort\s+plats\b/i.test(normalized)) {
+  const adminAllowed = await isAdmin(sender);
+
+  if (!adminAllowed) {
+    return '❌ Endast administratören kan ta bort arbetsplatser.';
+  }
+
+  const match = text.trim().match(/^ta\s+bort\s+plats\s+(.+)$/i);
+
+  if (!match) {
+    return `Använd:
+
+TA BORT PLATS Helsingborg Terminal`;
+  }
+
+  const name = match[1].trim();
+
+  const location = await deactivateAllowedLocation(name);
+
+  if (!location) {
+    return `❌ Arbetsplatsen "${name}" hittades inte eller är redan borttagen.`;
+  }
+
+  return `✅ Arbetsplats borttagen.
+
+Namn: ${location.name}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
