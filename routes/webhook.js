@@ -201,7 +201,25 @@ if (isLocation) {
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return '❌ Kunde inte läsa positionen. Försök skicka platsen igen.';
   }
+if (pendingAction?.action === 'awaiting_new_allowed_location') {
+  const { name, radiusMeters } = pendingAction.metadata;
 
+  const location = await addAllowedLocation({
+    name,
+    latitude,
+    longitude,
+    radiusMeters
+  });
+
+  await clearPendingAction(sender);
+
+  return `✅ Arbetsplats sparad.
+
+Namn: ${location.name}
+Latitud: ${location.latitude}
+Longitud: ${location.longitude}
+Radie: ${location.radius_meters} meter`;
+}
 const isCheckInLocation =
   pendingAction?.action === 'awaiting_checkin_location';
 
