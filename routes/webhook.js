@@ -1096,6 +1096,27 @@ TA BORT PLATS Helsingborg Terminal`;
 
 Namn: ${location.name}`;
 }
+if (/^lägg\s+till\s+admin\b/i.test(text.trim())) {
+  if (!(await isAdmin(sender))) {
+    return '❌ Endast administratörer kan lägga till nya administratörer.';
+  }
+
+  const match = text.trim().match(/^lägg\s+till\s+admin\s+(\d+)$/i);
+
+  if (!match) {
+    return `Använd:
+
+LÄGG TILL ADMIN 46701234567`;
+  }
+
+  const phone = match[1];
+
+  await addAdmin(phone);
+
+  return `✅ Administratör tillagd.
+
+Telefon: ${phone}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
