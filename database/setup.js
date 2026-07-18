@@ -13,7 +13,10 @@ async function setupDatabase() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
-
+await query(`
+  ALTER TABLE pending_actions
+  ADD COLUMN IF NOT EXISTS metadata JSONB
+`);
   await query(`
     CREATE TABLE IF NOT EXISTS messages (
       id BIGSERIAL PRIMARY KEY,
