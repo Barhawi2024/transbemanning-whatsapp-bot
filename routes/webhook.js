@@ -1117,6 +1117,35 @@ LÄGG TILL ADMIN 46701234567`;
 
 Telefon: ${phone}`;
 }
+if (/^ta\s+bort\s+admin\b/i.test(text.trim())) {
+  if (!(await isAdmin(sender))) {
+    return '❌ Endast administratörer kan ta bort administratörer.';
+  }
+
+  const match = text.trim().match(/^ta\s+bort\s+admin\s+(\d+)$/i);
+
+  if (!match) {
+    return `Använd:
+
+TA BORT ADMIN 46701234567`;
+  }
+
+  const phone = match[1];
+
+  if (phone === process.env.ADMIN_PHONE?.replace(/\D/g, '')) {
+    return '❌ Huvudadministratören kan inte tas bort.';
+  }
+
+  const removed = await removeAdmin(phone);
+
+  if (!removed) {
+    return '❌ Administratören hittades inte.';
+  }
+
+  return `✅ Administratören har tagits bort.
+
+Telefon: ${phone}`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
