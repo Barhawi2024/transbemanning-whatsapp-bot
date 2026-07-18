@@ -1168,6 +1168,21 @@ if (text.trim().toLowerCase() === 'adminlista') {
 
 ${adminList}`;
 }
+if (/^meddelande\s+alla$/i.test(text.trim())) {
+  if (!(await isAdmin(sender))) {
+    return '❌ Endast administratörer kan använda detta kommando.';
+  }
+
+  await setPendingAction({
+    sender,
+    driverId: null,
+    action: 'awaiting_broadcast_message'
+  });
+
+  return `📢 Skicka nu meddelandet som ska skickas till alla registrerade förare.
+
+Skriv AVBRYT för att avbryta.`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
