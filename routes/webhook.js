@@ -21,6 +21,8 @@ const {
 removeAdmin,
 listAdmins,
   findDriver,
+ getDriver,
+createLeaveRequest, 
   updateTodaySessionTime,
   setPendingAction,
   getPendingAction,
@@ -320,7 +322,15 @@ AVBRYT – avbryt`;
     await clearPendingAction(sender);
     return '❌ Uppgifter saknas. Försök igen med LEDIG.';
   }
+const driver = await getDriver(driverId);
 
+const leaveRequest = await createLeaveRequest({
+  driverId,
+  phone: driver?.phone || sender,
+  name: driverName,
+  fromDate,
+  toDate
+});
   const admins = await listAdmins();
 
   let succeeded = 0;
