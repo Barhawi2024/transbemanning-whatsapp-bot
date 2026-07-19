@@ -1509,8 +1509,38 @@ ${driver.driver_id} – ${driver.name}
 
 Skriv AVBRYT för att avbryta.`;
 }
-if (/^godkänn ledig\b/i.test(text.trim())) {
-    return '✅ Kommandot GODKÄNN LEDIG hittades.';
+if (/^godkänn\s+ledig\s+\d+$/i.test(text.trim())) {
+  if (!(await isAdmin(sender))) {
+    return '❌ Endast administratörer kan godkänna ledighet.';
+  }
+
+  const match = text.trim().match(/^godkänn\s+ledig\s+(\d+)$/i);
+  const requestId = Number(match[1]);
+
+  const leaveRequest = await updateLeaveRequestStatus({
+    requestId,
+    status: 'approved',
+    approvedBy: sender
+  });
+
+  if (!leaveRequest) {
+    return `❌ Ledighetsansökan #${requestId} hittades inte.`;
+  }
+
+  await sendWhatsAppText(
+    leaveRequest.phone,
+    `✅ Din ledighetsansökan har godkänts.
+
+Från: ${leaveRequest.from_date}
+Till: ${leaveRequest.to_date}
+
+TransBemanning AB`
+  );
+
+  return `✅ Ledighetsansökan #${requestId} har godkänts.
+
+Förare: ${leaveRequest.driver_id} – ${leaveRequest.name}`;
+}
 }
 if (/^ledig\b/i.test(text.trim())) {
   const driver = await getDriverByPhone(sender);
