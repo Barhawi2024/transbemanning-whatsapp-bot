@@ -341,7 +341,7 @@ const leaveRequest = await createLeaveRequest({
       await sendWhatsAppText(
         admin.phone,
         `📅 Ny ledighetsansökan
-
+Ansökan: #${leaveRequest.id}
 👤 ${driverName}
 Förarkod: ${driverId}
 
