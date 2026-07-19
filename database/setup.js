@@ -165,6 +165,20 @@ await query(`
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 `);
+await query(`
+CREATE TABLE IF NOT EXISTS leave_requests (
+    id SERIAL PRIMARY KEY,
+    driver_id VARCHAR(20) NOT NULL,
+    phone TEXT,
+    name TEXT,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    approved_by TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+`);
   console.log('✅ Database tables ready');
 }
 
