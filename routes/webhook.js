@@ -1427,6 +1427,48 @@ ${driver.driver_id} – ${driver.name}
 
 Skriv AVBRYT för att avbryta.`;
 }
+if (/^ledig\b/i.test(text.trim())) {
+  if (!driver) {
+    return '❌ Du måste vara registrerad för att ansöka om ledighet.';
+  }
+
+  const match = text.trim().match(
+    /^ledig\s+(\d{4}-\d{2}-\d{2})(?:\s+(\d{4}-\d{2}-\d{2}))?$/i
+  );
+
+  if (!match) {
+    return `Använd:
+
+LEDIG 2026-08-12
+
+eller
+
+LEDIG 2026-08-12 2026-08-18`;
+  }
+
+  const fromDate = match[1];
+  const toDate = match[2] || fromDate;
+
+  await setPendingAction({
+    sender,
+    driverId: driver.driver_id,
+    action: 'leave_request',
+    metadata: {
+      fromDate,
+      toDate,
+      driverName: driver.name,
+      driverId: driver.driver_id
+    }
+  });
+
+  return `📅 Din ledighetsansökan är klar att skickas.
+
+Från: ${fromDate}
+Till: ${toDate}
+
+Svara JA för att skicka.
+Svara AVBRYT för att avbryta.`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
