@@ -349,10 +349,10 @@ Från: ${fromDate}
 Till: ${toDate}
 
 Godkänn:
-GODKÄNN LEDIG ${driverId}
+GODKÄNN LEDIG ${leaveRequest.id}
 
 Neka:
-NEKA LEDIG ${driverId}`
+NEKA LEDIG ${leaveRequest.id}
       );
 
       succeeded++;
