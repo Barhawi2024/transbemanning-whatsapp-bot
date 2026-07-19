@@ -11,6 +11,7 @@ const gps = require('./gps');
 const reports = require('./reports');
 const pdfReports = require('./pdfReports');
 const pendingActions = require('./pendingActions');
+const leaveRequests = require('./leaveRequests');
 
 module.exports = {
   pool,
@@ -26,5 +27,6 @@ module.exports = {
   ...gps,
   ...reports,
   ...pdfReports,
+  ...leaveRequests,
   ...pendingActions
 };
