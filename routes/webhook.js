@@ -1295,6 +1295,41 @@ if (/^meddelande\s+alla$/i.test(text.trim())) {
 
 Skriv AVBRYT för att avbryta.`;
 }
+if (/^meddelande\s+(.+)$/i.test(text.trim())) {
+  if (!(await isAdmin(sender))) {
+    return '❌ Endast administratörer kan använda detta kommando.';
+  }
+
+  const match = text.trim().match(/^meddelande\s+(.+)$/i);
+  const target = match[1].trim();
+
+  if (target.toLowerCase() === 'alla') {
+    return '❌ Använd kommandot MEDDELANDE ALLA.';
+  }
+
+  const driver = await findDriver(target);
+
+  if (!driver) {
+    return `❌ Föraren "${target}" hittades inte.`;
+  }
+
+  await setPendingAction({
+    sender,
+    driverId: driver.driver_id,
+    action: 'awaiting_private_message',
+    metadata: {
+      phone: driver.phone,
+      name: driver.name,
+      driverId: driver.driver_id
+    }
+  });
+
+  return `✍️ Skriv meddelandet som ska skickas till:
+
+${driver.driver_id} – ${driver.name}
+
+Skriv AVBRYT för att avbryta.`;
+}
 return `❌ Okänt kommando.\n\nAnvänd:\nIN – checka in\nUT – checka ut`;
 }
 
