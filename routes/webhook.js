@@ -338,9 +338,11 @@ const leaveRequest = await createLeaveRequest({
 
   for (const admin of admins) {
     try {
+      
       await sendWhatsAppText(
-        admin.phone,
-        `📅 Ny ledighetsansökan
+  admin.phone,
+  `📅 Ny ledighetsansökan
+
 Ansökan: #${leaveRequest.id}
 👤 ${driverName}
 Förarkod: ${driverId}
@@ -352,9 +354,8 @@ Godkänn:
 GODKÄNN LEDIG ${leaveRequest.id}
 
 Neka:
-NEKA LEDIG ${leaveRequest.id}
-      );
-
+NEKA LEDIG ${leaveRequest.id}`
+);
       succeeded++;
     } catch (error) {
       console.error(
