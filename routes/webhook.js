@@ -1509,6 +1509,9 @@ ${driver.driver_id} – ${driver.name}
 
 Skriv AVBRYT för att avbryta.`;
 }
+if (/^godkänn ledig\b/i.test(text.trim())) {
+    return '✅ Kommandot GODKÄNN LEDIG hittades.';
+}
 if (/^ledig\b/i.test(text.trim())) {
   const driver = await getDriverByPhone(sender);
 
