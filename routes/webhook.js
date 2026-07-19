@@ -1428,6 +1428,8 @@ ${driver.driver_id} – ${driver.name}
 Skriv AVBRYT för att avbryta.`;
 }
 if (/^ledig\b/i.test(text.trim())) {
+  const driver = await getDriverByPhone(sender);
+
   if (!driver) {
     return '❌ Du måste vara registrerad för att ansöka om ledighet.';
   }
