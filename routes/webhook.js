@@ -1509,16 +1509,23 @@ ${driver.driver_id} – ${driver.name}
 
 Skriv AVBRYT för att avbryta.`;
   
-if (/^godk(?:ä|a)nn\s+ledig\s+\d+$/.test(normalized)) {
+if (
+  normalized.startsWith('godkänn ledig ') ||
+  normalized.startsWith('godkann ledig ')
+) {
   if (!(await isAdmin(sender))) {
     return '❌ Endast administratörer kan godkänna ledighet.';
   }
 
-  const match = normalized.match(
-    /^godk(?:ä|a)nn\s+ledig\s+(\d+)$/
-  );
+  const parts = normalized.split(/\s+/);
+  const requestId = Number(parts[2]);
 
-  const requestId = Number(match[1]);
+  if (!Number.isInteger(requestId)) {
+    return `❌ Fel format.
+
+Använd:
+GODKÄNN LEDIG 9`;
+  }
 
   const leaveRequest = await updateLeaveRequestStatus({
     requestId,
@@ -1530,20 +1537,21 @@ if (/^godk(?:ä|a)nn\s+ledig\s+\d+$/.test(normalized)) {
     return `❌ Ledighetsansökan #${requestId} hittades inte.`;
   }
 
-  await sendWhatsAppText(
-    leaveRequest.phone,
-    `✅ Din ledighetsansökan har godkänts.
+  if (leaveRequest.phone) {
+    await sendWhatsAppText(
+      leaveRequest.phone,
+      `✅ Din ledighetsansökan har godkänts.
 
 Från: ${leaveRequest.from_date}
 Till: ${leaveRequest.to_date}
 
 TransBemanning AB`
-  );
+    );
+  }
 
   return `✅ Ledighetsansökan #${requestId} har godkänts.
 
 Förare: ${leaveRequest.driver_id} – ${leaveRequest.name}`;
-}
 }
 if (/^ledig\b/i.test(text.trim())) {
   const driver = await getDriverByPhone(sender);
