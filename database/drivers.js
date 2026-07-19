@@ -281,6 +281,23 @@ async function permanentlyDeleteDriver(driverId) {
     client.release();
   }
 }
+async function findDriver(search) {
+  const result = await query(
+    `
+    SELECT *
+    FROM drivers
+    WHERE is_active = TRUE
+      AND (
+        driver_id = $1
+        OR LOWER(name) = LOWER($1)
+      )
+    LIMIT 1
+    `,
+    [search]
+  );
+
+  return result.rows[0] || null;
+}
 module.exports = {
   createDriver,
   getDriver,
