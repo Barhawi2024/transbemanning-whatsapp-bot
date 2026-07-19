@@ -198,6 +198,103 @@ if (!text.trim() && !isLocation) {
 console.log("NORMALIZED:", normalized);
 
 const pendingAction = await getPendingAction(sender);
+if (
+  pendingAction?.action === 'awaiting_private_message' &&
+  !isLocation
+) {
+  if (normalized === 'avbryt') {
+    await clearPendingAction(sender);
+    return '✅ Meddelandet har avbrutits.';
+  }
+
+  const messageText = text.trim();
+
+  if (!messageText) {
+    return '❌ Meddelandet får inte vara tomt.';
+  }
+
+  const phone = pendingAction.metadata?.phone;
+  const name = pendingAction.metadata?.name;
+  const driverId = pendingAction.metadata?.driverId;
+
+  if (!phone) {
+    await clearPendingAction(sender);
+    return '❌ Förarens telefonnummer saknas. Försök igen.';
+  }
+
+  await setPendingAction({
+    sender,
+    driverId,
+    action: 'awaiting_private_message_confirmation',
+    metadata: {
+      phone,
+      name,
+      driverId,
+      messageText
+    }
+  });
+
+  return `📢 Du är på väg att skicka:
+
+${messageText}
+
+Till: ${driverId} – ${name}
+
+Svara JA för att skicka.
+Svara AVBRYT för att avbryta.`;
+}
+if (
+  pendingAction?.action === 'awaiting_private_message_confirmation' &&
+  !isLocation
+) {
+  if (normalized === 'avbryt') {
+    await clearPendingAction(sender);
+    return '✅ Meddelandet har avbrutits.';
+  }
+
+  if (normalized !== 'ja') {
+    return `Svara:
+
+JA – skicka meddelandet
+AVBRYT – avbryt`;
+  }
+
+  const phone = pendingAction.metadata?.phone;
+  const name = pendingAction.metadata?.name;
+  const driverId = pendingAction.metadata?.driverId;
+  const messageText = pendingAction.metadata?.messageText;
+
+  if (!phone || !messageText) {
+    await clearPendingAction(sender);
+    return '❌ Uppgifter saknas. Försök igen.';
+  }
+
+  try {
+    await sendWhatsAppText(
+      phone,
+      `📢 Meddelande från TransBemanning
+
+${messageText}
+
+TransBemanning AB`
+    );
+
+    await clearPendingAction(sender);
+
+    return `✅ Meddelandet skickades till:
+
+${driverId} – ${name}`;
+  } catch (error) {
+    console.error(
+      'Kunde inte skicka privat meddelande:',
+      error.response?.data || error.message
+    );
+
+    await clearPendingAction(sender);
+
+    return `❌ Meddelandet kunde inte skickas till ${name}.`;
+  }
+}
 // Administratören skriver meddelandet som ska skickas till alla
 if (
   pendingAction?.action === 'awaiting_broadcast_message' &&
