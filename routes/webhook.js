@@ -20,6 +20,7 @@ const {
   addAdmin,
 removeAdmin,
 listAdmins,
+  findDriver,
   updateTodaySessionTime,
   setPendingAction,
   getPendingAction,
