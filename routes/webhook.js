@@ -1509,12 +1509,15 @@ ${driver.driver_id} – ${driver.name}
 
 Skriv AVBRYT för att avbryta.`;
   
-if (/^godkänn\s+ledig\s+\d+$/i.test(text.trim())) {
+if (/^godk(?:ä|a)nn\s+ledig\s+\d+$/.test(normalized)) {
   if (!(await isAdmin(sender))) {
     return '❌ Endast administratörer kan godkänna ledighet.';
   }
 
-  const match = text.trim().match(/^godkänn\s+ledig\s+(\d+)$/i);
+  const match = normalized.match(
+    /^godk(?:ä|a)nn\s+ledig\s+(\d+)$/
+  );
+
   const requestId = Number(match[1]);
 
   const leaveRequest = await updateLeaveRequestStatus({
