@@ -21,7 +21,6 @@ const {
 removeAdmin,
 listAdmins,
   findDriver,
-  sendWhatsAppText,
   updateTodaySessionTime,
   setPendingAction,
   getPendingAction,
