@@ -1508,7 +1508,7 @@ if (/^meddelande\s+(.+)$/i.test(text.trim())) {
 ${driver.driver_id} – ${driver.name}
 
 Skriv AVBRYT för att avbryta.`;
-}
+  
 if (/^godkänn\s+ledig\s+\d+$/i.test(text.trim())) {
   if (!(await isAdmin(sender))) {
     return '❌ Endast administratörer kan godkänna ledighet.';
