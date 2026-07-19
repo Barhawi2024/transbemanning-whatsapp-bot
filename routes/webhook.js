@@ -295,6 +295,77 @@ ${driverId} – ${name}`;
     return `❌ Meddelandet kunde inte skickas till ${name}.`;
   }
 }
+if (
+  pendingAction?.action === 'leave_request' &&
+  !isLocation
+) {
+  if (normalized === 'avbryt') {
+    await clearPendingAction(sender);
+    return '✅ Ledighetsansökan har avbrutits.';
+  }
+
+  if (normalized !== 'ja') {
+    return `Svara:
+
+JA – skicka ansökan
+AVBRYT – avbryt`;
+  }
+
+  const fromDate = pendingAction.metadata?.fromDate;
+  const toDate = pendingAction.metadata?.toDate;
+  const driverName = pendingAction.metadata?.driverName;
+  const driverId = pendingAction.metadata?.driverId;
+
+  if (!fromDate || !toDate || !driverId) {
+    await clearPendingAction(sender);
+    return '❌ Uppgifter saknas. Försök igen med LEDIG.';
+  }
+
+  const admins = await listAdmins();
+
+  let succeeded = 0;
+  let failed = 0;
+
+  for (const admin of admins) {
+    try {
+      await sendWhatsAppText(
+        admin.phone,
+        `📅 Ny ledighetsansökan
+
+👤 ${driverName}
+Förarkod: ${driverId}
+
+Från: ${fromDate}
+Till: ${toDate}
+
+Godkänn:
+GODKÄNN LEDIG ${driverId}
+
+Neka:
+NEKA LEDIG ${driverId}`
+      );
+
+      succeeded++;
+    } catch (error) {
+      console.error(
+        'Kunde inte skicka ledighetsansökan till admin:',
+        error.response?.data || error.message
+      );
+
+      failed++;
+    }
+  }
+
+  await clearPendingAction(sender);
+
+  return `✅ Ledighetsansökan har skickats.
+
+Från: ${fromDate}
+Till: ${toDate}
+
+Administratörer nådda: ${succeeded}
+Misslyckades: ${failed}`;
+}
 // Administratören skriver meddelandet som ska skickas till alla
 if (
   pendingAction?.action === 'awaiting_broadcast_message' &&
