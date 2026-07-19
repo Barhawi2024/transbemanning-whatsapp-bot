@@ -305,5 +305,6 @@ module.exports = {
   getAllDrivers,
   updateDriverVehicle,
   deactivateDriver,
-  permanentlyDeleteDriver
+  permanentlyDeleteDriver,
+  findDriver
 };
